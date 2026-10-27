@@ -42,6 +42,11 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Açılır pencere (vaka çalışması) açıkken arkadaki sayfa kaymasın */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

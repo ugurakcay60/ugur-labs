@@ -1,20 +1,21 @@
 import { ArrowUpRight } from "lucide-react";
+import CaseStudyDialog from "@/components/case-study/CaseStudyDialog";
 import type { Project } from "@/data/projects";
 import { dictionary, type Lang } from "@/i18n/dictionary";
 
 type Props = { project: Project; index: number; lang: Lang };
 
 export default function ProjectRow({ project, index, lang }: Props) {
-  const { title, description, link, tags, status } = project;
+  const { title, description, link, tags, status, caseStudy } = project;
   const t = dictionary[lang].projects;
 
   return (
-    <li>
+    <li className="border-b border-line transition-colors hover:bg-surface">
       <a
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className="group grid grid-cols-[2.5rem_1fr_auto] gap-x-4 border-b border-line py-8 transition-colors hover:bg-surface sm:grid-cols-[4rem_1fr_auto] sm:px-4"
+        className={`group grid grid-cols-[2.5rem_1fr_auto] gap-x-4 pt-8 sm:grid-cols-[4rem_1fr_auto] sm:px-4 ${caseStudy ? "pb-4" : "pb-8"}`}
       >
         <span className="pt-2 font-mono text-sm text-muted">{String(index).padStart(2, "0")}</span>
         <div>
@@ -35,6 +36,14 @@ export default function ProjectRow({ project, index, lang }: Props) {
         </div>
         <ArrowUpRight className="mt-1.5 size-6 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
       </a>
+      {/* Link satırın içinde iç içe <a> olamayacağı için ayrı satırda, metin sütununa hizalı */}
+      {caseStudy && (
+        <div className="grid grid-cols-[2.5rem_1fr] gap-x-4 pb-8 sm:grid-cols-[4rem_1fr] sm:px-4">
+          <div className="col-start-2">
+            <CaseStudyDialog id={caseStudy} lang={lang} link={link} />
+          </div>
+        </div>
+      )}
     </li>
   );
 }

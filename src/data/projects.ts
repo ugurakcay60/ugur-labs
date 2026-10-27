@@ -1,3 +1,4 @@
+import type { CaseStudyId } from "@/data/case-studies";
 import type { Lang } from "@/i18n/dictionary";
 
 // Yeni proje eklemek için listeye bir nesne eklemen yeterli; arayüz otomatik güncellenir.
@@ -7,6 +8,8 @@ export type Project = {
   link: string;
   tags?: string[];
   status?: "live" | "beta" | "wip";
+  // Satırın altında "Vaka çalışması" linki gösterir (metinler: data/case-studies.ts)
+  caseStudy?: CaseStudyId;
 };
 
 export const projects: Project[] = [
@@ -19,6 +22,7 @@ export const projects: Project[] = [
     link: "https://diyet-ai.ugur-labs.com",
     tags: ["Next.js", "Supabase", "AI"],
     status: "live",
+    caseStudy: "diyet-ai",
   },
   {
     title: "Tık Sayacı",

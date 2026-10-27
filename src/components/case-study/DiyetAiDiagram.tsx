@@ -3,7 +3,8 @@ import type { Lang } from "@/i18n/dictionary";
 import { icons } from "./icons";
 import type { IconName } from "@/data/case-studies";
 
-// Diyet-AI mimari diyagramı. Renkler tema değişkenlerinden gelir (açık/koyu otomatik).
+// Diyet-AI mimari diyagramı. Renkler tema değişkenlerinden gelir (açık/koyu otomatik); monokrom,
+// mavi (accent) yalnızca seçili kutuda.
 // Rozet numaraları "isteğin yolculuğu" adımlarıyla, kutuların `part` değeri parça kartlarının ikonuyla eşleşir.
 const labels = {
   tr: {
@@ -104,18 +105,24 @@ function Box({ part, active, onSelect, x, y, w, h, eyebrow, title, lines = [], i
         width={w}
         height={h}
         rx={14}
-        className={`transition-colors group-focus-visible:stroke-foreground ${muted ? "fill-background" : "fill-surface"} ${
-          isActive ? "stroke-accent" : "stroke-line group-hover:stroke-muted"
+        // Seçili parçanın ana (ikonlu) kutusu mavi kenar + parıltı alır, içteki kutular sade kalır;
+        // diğerleri üzerine gelince koyulaşır
+        className={`transition-[stroke,filter] duration-200 group-focus-visible:stroke-foreground ${muted ? "fill-background" : "fill-surface"} ${
+          isActive && icon
+            ? "stroke-accent drop-shadow-[0_0_6px_var(--accent)]"
+            : isActive
+              ? "stroke-muted"
+              : "stroke-line group-hover:stroke-muted"
         }`}
-        strokeWidth={isActive ? 2 : 1.5}
+        strokeWidth={isActive && icon ? 2 : 1.5}
         strokeDasharray={dashed ? "6 5" : undefined}
       />
       {eyebrow && (
-        <text x={x + 14} y={y + 22} className={`font-mono text-[10px] tracking-[0.12em] ${isActive ? "fill-accent" : "fill-muted"}`}>
+        <text x={x + 14} y={y + 22} className={`font-mono text-[10px] tracking-[0.12em] ${isActive ? "fill-foreground" : "fill-muted"}`}>
           {eyebrow}
         </text>
       )}
-      {Icon && <Icon x={x + 14} y={titleY - 14} width={18} height={18} className="text-accent" />}
+      {Icon && <Icon x={x + 14} y={titleY - 14} width={18} height={18} className="text-foreground" />}
       <text x={x + (Icon ? 40 : 14)} y={titleY} className="fill-foreground text-[15px] font-medium">
         {title}
       </text>
@@ -133,7 +140,7 @@ function Edge({ d, both, dashed }: { d: string; both?: boolean; dashed?: boolean
     <path
       d={d}
       fill="none"
-      className="pointer-events-none stroke-accent"
+      className="pointer-events-none stroke-muted"
       strokeWidth={1.5}
       strokeDasharray={dashed ? "5 5" : undefined}
       markerEnd="url(#arch-arrow)"
@@ -145,7 +152,7 @@ function Edge({ d, both, dashed }: { d: string; both?: boolean; dashed?: boolean
 function Badge({ x, y, n }: { x: number; y: number; n: number }) {
   return (
     <g className="pointer-events-none">
-      <circle cx={x} cy={y} r={10} className="fill-accent" />
+      <circle cx={x} cy={y} r={10} className="fill-foreground" />
       <text x={x} y={y + 4} textAnchor="middle" className="fill-background text-[11px] font-semibold">
         {n}
       </text>
@@ -170,7 +177,7 @@ export default function DiyetAiDiagram({ lang, active, onSelect }: { lang: Lang 
     <svg viewBox="0 0 1000 612" role="group" aria-label={lang === "tr" ? "Diyet-AI mimari diyagramı" : "Diyet-AI architecture diagram"} className="h-auto w-full">
       <defs>
         <marker id="arch-arrow" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" className="fill-accent" />
+          <path d="M0,0 L10,5 L0,10 z" className="fill-muted" />
         </marker>
       </defs>
 

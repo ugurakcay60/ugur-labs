@@ -23,12 +23,12 @@ export default function Home({ lang }: { lang: Lang }) {
         {/* Hero */}
         <section className={`${container} pb-20 pt-16 sm:pb-28 sm:pt-28`}>
           <p className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-muted">
-            <span className="h-px w-8 bg-accent" />
+            <span className="h-px w-8 bg-foreground/40" />
             {t.hero.eyebrow}
           </p>
           <h1 className="mt-8 max-w-5xl text-balance text-[clamp(2.6rem,7.5vw,6rem)] font-medium leading-[1.02] tracking-[-0.04em]">
             {before}{" "}
-            <em className="font-serif font-normal tracking-[-0.02em] text-accent">{accent}</em>{" "}
+            <em className="font-serif font-normal tracking-[-0.02em] text-muted">{accent}</em>{" "}
             {after}
           </h1>
           <div className="mt-12 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
@@ -36,7 +36,7 @@ export default function Home({ lang }: { lang: Lang }) {
             <div className="flex flex-wrap gap-3 text-sm font-medium">
               <a
                 href="#projects"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-background transition hover:opacity-85"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-accent-foreground shadow-[0_8px_24px_-10px_var(--accent)] transition hover:brightness-110"
               >
                 {t.hero.cta} <ArrowDown className="size-4" />
               </a>
@@ -57,7 +57,7 @@ export default function Home({ lang }: { lang: Lang }) {
           <div className={`${container} grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0`}>
             {t.focus.map(({ title, text }, i) => (
               <div key={title} className="py-8 sm:px-8 sm:first:pl-0 sm:last:pr-0">
-                <span className="font-mono text-xs text-accent">0{i + 1}</span>
+                <span className="font-mono text-xs text-muted">0{i + 1}</span>
                 <h2 className="mt-3 font-medium">{title}</h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted">{text}</p>
               </div>
@@ -94,10 +94,10 @@ export default function Home({ lang }: { lang: Lang }) {
                           href={href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group flex items-center justify-between border-b border-line py-2.5 text-[15px] transition-colors hover:text-accent"
+                          className="group flex items-center justify-between border-b border-line py-2.5 text-[15px] text-foreground/80 transition-colors hover:text-foreground"
                         >
                           {name}
-                          <ArrowUpRight className="size-3.5 text-muted transition group-hover:text-accent" />
+                          <ArrowUpRight className="size-3.5 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
                         </a>
                       </li>
                     ))}

@@ -28,7 +28,7 @@ const tr = {
     count: (n: number) => `${n} proje`,
     status: { live: "Yayında", beta: "Beta", wip: "Geliştiriliyor" },
   },
-  caseStudy: { open: "Vaka çalışması · Mimari", eyebrow: "Vaka çalışması", close: "Kapat", visit: "Uygulamayı aç" },
+  caseStudy: { open: "Vaka çalışması · Mimari", eyebrow: "Vaka çalışması", close: "Kapat", visit: "Uygulamayı aç", inDiagram: "Diyagramda gör" },
   links: { title: "Faydalı linkler", subtitle: "Sık kullandığım adresler, tek yerde." },
   footer: { rights: "Tüm hakları saklıdır." },
 };
@@ -58,7 +58,7 @@ const en: typeof tr = {
     count: (n: number) => `${n} ${n === 1 ? "project" : "projects"}`,
     status: { live: "Live", beta: "Beta", wip: "In progress" },
   },
-  caseStudy: { open: "Case study · Architecture", eyebrow: "Case study", close: "Close", visit: "Open the app" },
+  caseStudy: { open: "Case study · Architecture", eyebrow: "Case study", close: "Close", visit: "Open the app", inDiagram: "See in diagram" },
   links: { title: "Useful links", subtitle: "Sites I use often, in one place." },
   footer: { rights: "All rights reserved." },
 };

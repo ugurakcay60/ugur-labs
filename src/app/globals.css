@@ -3,22 +3,26 @@
 /* Koyu tema <html class="dark"> ile açılır (layout.tsx'teki script ve ThemeToggle) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Monokrom palet; tek vurgu rengi elektrik mavisi (butonlar ve seçili/etkileşimli durumlar).
+   Dekoratif metinlerde accent kullanma; üstündeki yazı için accent-foreground (beyaz). */
 :root {
-  --background: #f6f5f1;
+  --background: #fafafa;
   --surface: #ffffff;
-  --foreground: #15171c;
-  --muted: #61666f;
-  --line: #e3e1da;
-  --accent: #c2410c;
+  --foreground: #0a0a0a;
+  --muted: #666666;
+  --line: #e5e5e5;
+  --accent: #2563eb;
+  --accent-foreground: #ffffff;
 }
 
 .dark {
-  --background: #0b0c0f;
-  --surface: #15171b;
-  --foreground: #ecedef;
-  --muted: #959ba5;
-  --line: #24272d;
-  --accent: #fb923c;
+  --background: #0a0a0a;
+  --surface: #141414;
+  --foreground: #ededed;
+  --muted: #a1a1a1;
+  --line: #262626;
+  --accent: #2f6bff;
+  --accent-foreground: #ffffff;
 }
 
 @theme inline {
@@ -28,6 +32,7 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-instrument-serif);
@@ -54,5 +59,5 @@ body {
 
 ::selection {
   background: var(--accent);
-  color: var(--background);
+  color: var(--accent-foreground);
 }

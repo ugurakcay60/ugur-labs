@@ -12,6 +12,9 @@ export type CaseStudy = {
   // Teknik detaydan önce ürünün vaadi (büyük puntoyla)
   tagline: string;
   intro: string;
+  // Teknik olmayan okuyucu için 3 adımlık özet kartlar; `part` diyagramdaki kutuyu seçer
+  layersTitle: string;
+  layers: { label: string; title: string; text: string; part: IconName; badge?: string }[];
   diagramHint: string;
   flowTitle: string;
   flow: string[];
@@ -28,6 +31,28 @@ const diyetAi: Record<Lang, CaseStudy> = {
     tagline: "Kalori saymakla uğraşma. Planındaki her öğünü bir fotoğrafla onayla; gün, sen ilerledikçe açılsın.",
     intro:
       "Diyet-AI, öğün, egzersiz ve tartı fotoğraflarıyla doğrulanan kişisel bir diyet takip uygulaması. Ayrı bir uygulama sunucusu yok: arayüz Vercel'den gelir, tarayıcı veriler için doğrudan Supabase ile konuşur, güvenliği veritabanı kuralları sağlar. Tamamı ücretsiz katmanlarda çalışıyor.",
+    layersTitle: "Üç katmanda Diyet-AI",
+    layers: [
+      {
+        label: "Frontend",
+        title: "Telefondaki uygulama",
+        text: "Mobil uyumlu, iki dilli arayüz. Fotoğraf çekme, sıkıştırma ve hatırlatıcılar cihazda çalışır; sunucuya yük ve maliyet bindirmez.",
+        part: "monitor",
+      },
+      {
+        label: "Backend",
+        title: "Veri, giriş ve depolama",
+        text: "Veritabanı, kullanıcı girişi ve fotoğraf deposu tek bir yönetilen serviste. Her kullanıcı yalnızca kendi verisine erişir; bakımı yapılacak ayrı bir sunucu yok.",
+        part: "database",
+      },
+      {
+        label: "AI Layer",
+        title: "Fotoğraf doğrulama",
+        text: "Fotoğrafın gerçekten yemek, spor ya da tartı olduğunu kontrol eden katman. Arayüzü hazır; gerçek model, anahtarı gizli tutan bir sunucu fonksiyonu üzerinden bağlanacak.",
+        part: "sparkles",
+        badge: "Hazırlık",
+      },
+    ],
     diagramHint: "Diyagramı yana kaydırabilirsin",
     flowTitle: "Bir isteğin yolculuğu",
     flow: [
@@ -123,6 +148,28 @@ const diyetAi: Record<Lang, CaseStudy> = {
     tagline: "Stop counting calories. Confirm every meal in your plan with a photo, and the day unlocks as you go.",
     intro:
       "Diyet-AI is a personal diet tracker where meals, workouts and weigh-ins are confirmed with photos. There is no separate app server: Vercel serves the UI, the browser talks to Supabase directly for data, and database rules enforce security. Everything runs on free tiers.",
+    layersTitle: "Diyet-AI in three layers",
+    layers: [
+      {
+        label: "Frontend",
+        title: "The app on your phone",
+        text: "A mobile-friendly, bilingual UI. Taking photos, compressing them and reminders all run on the device, adding no server load or cost.",
+        part: "monitor",
+      },
+      {
+        label: "Backend",
+        title: "Data, sign-in and storage",
+        text: "Database, user sign-in and photo storage in one managed service. Each user can only reach their own data, and there is no separate server to maintain.",
+        part: "database",
+      },
+      {
+        label: "AI Layer",
+        title: "Photo verification",
+        text: "The layer that checks a photo really shows a meal, a workout or a scale. The UI is ready; the real model will plug in through a serverless function that keeps the key secret.",
+        part: "sparkles",
+        badge: "Prepared",
+      },
+    ],
     diagramHint: "Scroll the diagram sideways",
     flowTitle: "How a request travels",
     flow: [

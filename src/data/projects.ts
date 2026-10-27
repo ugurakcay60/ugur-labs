@@ -31,4 +31,15 @@ export const projects: Project[] = [
     tags: ["HTML", "CSS", "JavaScript"],
     status: "live",
   },
+  {
+    title: "Finans Paneli",
+    description: {
+      tr: "Gelir ve giderleri kaydedip bakiyeyi ve kategorilere göre harcamaları grafikle gösteren kişisel finans paneli. Veriler tarayıcıda kalır.",
+      en: "Personal finance dashboard that tracks income and expenses and charts balance and spending by category. Data stays in your browser (in Turkish).",
+    },
+    // finans.ugur-labs.com DNS kaydı eklenince o adrese geçilecek
+    link: "https://finans-dashboard-pi.vercel.app",
+    tags: ["React", "Vite", "Recharts"],
+    status: "live",
+  },
 ];

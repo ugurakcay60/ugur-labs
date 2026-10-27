@@ -1,31 +1,53 @@
 @import "tailwindcss";
 
+/* Koyu tema <html class="dark"> ile açılır (layout.tsx'teki script ve ThemeToggle) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f6f5f1;
+  --surface: #ffffff;
+  --foreground: #15171c;
+  --muted: #61666f;
+  --line: #e3e1da;
+  --accent: #c2410c;
+}
+
+.dark {
+  --background: #0b0c0f;
+  --surface: #15171b;
+  --foreground: #ecedef;
+  --muted: #959ba5;
+  --line: #24272d;
+  --accent: #fb923c;
+}
+
 @theme inline {
-  --color-background: #08090c;
-  --color-surface: #0f1116;
-  --color-foreground: #e8eaf0;
-  --color-muted: #8b91a1;
-  --color-line: #1f232c;
-  --color-accent: #5eead4;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+html.dark {
+  color-scheme: dark;
 }
 
-/* Hero arka planındaki ince ızgara */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at top, black 20%, transparent 70%);
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--background);
 }

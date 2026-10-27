@@ -1,0 +1,1663 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Tık sayacı, çoklu sayaç, kronometre, tempo ölçer, metin sayacı ve klavye yazım, tık hızı, tepki süresi, hedef testleri.">
+<link rel="icon" href="/favicon.ico">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()</script>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Tık Sayacı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: üstte iki gruplu araç seçici (Say / Test et), altında tek sütun halinde etkin araç; sayaç el tipi mekanik sayaç gibi */
+:root {
+  --bg: #e9edf2;
+  --surface: #f6f8fb;
+  --fg: #1b2330;
+  --muted: #5d6878;
+  --line: #cfd6df;
+  --body: #cfd6df;
+  --body-edge: #aeb7c3;
+  --window: #121821;
+  --digit: #f3f6fa;
+  --accent: #2f5bd3;
+  --accent-press: #2348ad;
+  --accent-soft: #dbe4fb;
+  --on-accent: #ffffff;
+  --good: #1d8048;
+  --good-soft: #d4efdf;
+  --on-good: #ffffff;
+  --bad: #c2412f;
+  --bad-soft: #f8ddd8;
+  --warn: #a8690f;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --surface: #181e27; --fg: #e6ebf2; --muted: #8d98a8; --line: #2c3441;
+    --body: #262d38; --body-edge: #3a4352;
+    --window: #070a0f; --digit: #f3f6fa;
+    --accent: #5b82ef; --accent-press: #4469d6; --accent-soft: #1d2a4a; --on-accent: #ffffff;
+    --good: #45c27a; --good-soft: #153222; --on-good: #0b1a11; --bad: #ef6a55; --bad-soft: #3b1d18; --warn: #e3ab4f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #181e27; --fg: #e6ebf2; --muted: #8d98a8; --line: #2c3441;
+  --body: #262d38; --body-edge: #3a4352;
+  --window: #070a0f; --digit: #f3f6fa;
+  --accent: #5b82ef; --accent-press: #4469d6; --accent-soft: #1d2a4a; --on-accent: #ffffff;
+  --good: #45c27a; --good-soft: #153222; --on-good: #0b1a11; --bad: #ef6a55; --bad-soft: #3b1d18; --warn: #e3ab4f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { width: min(760px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+/* Başlık */
+.top { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 6vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.lead { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* Araç seçici */
+.picker { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 28px; }
+.group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.group-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--body);
+  border: 1.5px solid var(--body-edge);
+  border-radius: 999px;
+}
+.chip {
+  font: 500 14px var(--font-display);
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip:hover { background: var(--surface); }
+.chip[aria-current="page"] { background: var(--fg); color: var(--bg); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 520px) {
+  .chips { border-radius: 18px; }
+}
+
+/* Araç paneli */
+.tool { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.tool-head { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.tool-head h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.015em; }
+.tool-head p { margin: 0; color: var(--muted); font-size: 14px; max-width: 52ch; text-wrap: balance; }
+.panel {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+/* Ortak düğmeler */
+.btn {
+  font: 800 15px var(--font-display);
+  color: var(--on-accent);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--accent-press);
+  touch-action: manipulation;
+}
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--accent-press); }
+.btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.ghost {
+  font: 500 14px var(--font-display);
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px solid var(--body-edge);
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.ghost:hover { color: var(--fg); border-color: var(--muted); }
+.ghost:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ghost:disabled { opacity: .45; cursor: default; }
+.ghost.danger { color: var(--on-accent); background: var(--bad); border-color: var(--bad); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; min-height: 36px; }
+.confirm-text { font-size: 14px; }
+
+/* Seçenek düğmeleri (süre, boyut...) */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--bg); }
+.seg button {
+  font: 500 13px var(--font-mono);
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: center; font-size: 13px; color: var(--muted); }
+.opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.opt-name { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+
+/* İstatistik satırı */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(var(--w, 420px), 100%); }
+.stats.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stat { text-align: center; }
+.stat b {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+.stat small { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); text-align: center; text-wrap: balance; }
+kbd {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid var(--body-edge);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.badge {
+  display: inline-block;
+  font: 500 12px var(--font-mono);
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge.good { background: var(--good-soft); color: var(--good); }
+
+/* 1) Mekanik sayaç */
+.device {
+  width: min(340px, 100%);
+  background: var(--body);
+  border: 2px solid var(--body-edge);
+  border-radius: 36px;
+  padding: 28px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 18px 40px -20px rgba(20, 30, 50, .45);
+}
+.window { background: var(--window); border-radius: 12px; padding: 10px 12px; display: flex; gap: 6px; }
+.wheel {
+  width: 40px;
+  height: 58px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 4px;
+  background: linear-gradient(#000 0%, #1d2430 20%, #1d2430 80%, #000 100%);
+}
+.strip { position: absolute; left: 0; right: 0; top: 0; transition: transform .22s cubic-bezier(.3, 1.4, .5, 1); }
+.strip span {
+  display: block;
+  height: 58px;
+  line-height: 58px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 36px;
+  color: var(--digit);
+  font-variant-numeric: tabular-nums;
+}
+.press {
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 8px 0 var(--accent-press), 0 14px 24px -8px rgba(20, 40, 110, .5);
+  transition: transform .06s, box-shadow .06s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+.press:active, .press.down {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 var(--accent-press), 0 4px 10px -6px rgba(20, 40, 110, .5);
+}
+.press:focus-visible { outline: 3px solid var(--fg); outline-offset: 6px; }
+
+/* 2) Çoklu sayaç */
+.counters { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.counter {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.counter:first-child { padding-top: 0; }
+.counter .idx { font: 500 12px var(--font-mono); color: var(--muted); }
+.counter input {
+  font: 500 16px var(--font-display);
+  color: var(--fg);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 5px 8px;
+  width: 100%;
+  min-width: 0;
+}
+.counter input:hover { border-color: var(--line); }
+.counter input:focus { outline: none; border-color: var(--accent); background: var(--bg); }
+.counter output {
+  min-width: 3.2ch;
+  text-align: right;
+  font: 700 22px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.round {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--body-edge);
+  background: var(--bg);
+  color: var(--fg);
+  font: 700 20px var(--font-mono);
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.round.plus { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.round:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.del {
+  font: 500 12px var(--font-display);
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  padding: 6px 4px;
+  cursor: pointer;
+  min-width: 34px;
+}
+.del:hover { color: var(--bad); }
+.del.armed { color: var(--bad); font-weight: 800; }
+.del:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+.add { display: flex; gap: 8px; margin-top: 14px; }
+.add input {
+  flex: 1;
+  min-width: 0;
+  font: 400 15px var(--font-display);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+.add input:focus { outline: none; border-color: var(--accent); }
+.total-line { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; font-size: 13px; color: var(--muted); }
+.total-line b { font: 700 18px var(--font-mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+@media (max-width: 440px) {
+  .counter { grid-template-columns: minmax(0, 1fr) auto auto auto auto; }
+  .counter .idx { display: none; }
+}
+
+/* 3) CPS ve tepki pedleri */
+.pad {
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  border-radius: 20px;
+  border: 2px dashed var(--body-edge);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.pad:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.pad .big { font: 700 clamp(44px, 12vw, 72px) var(--font-mono); font-variant-numeric: tabular-nums; line-height: 1.05; }
+.pad .say { font-size: 18px; font-weight: 800; }
+.pad .sub { font-size: 14px; color: var(--muted); }
+.pad.running { border-style: solid; border-color: var(--accent); }
+.ripple {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  animation: ripple .45s ease-out forwards;
+}
+@keyframes ripple { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; width: 100%; }
+.bars span { flex: 1; min-width: 0; background: var(--accent); border-radius: 3px 3px 0 0; opacity: .85; }
+.bars-axis { display: flex; justify-content: space-between; font: 500 11px var(--font-mono); color: var(--muted); margin-top: 4px; }
+
+/* Tepki süresi durumları */
+.pad.wait { background: var(--bad-soft); border-color: var(--bad); border-style: solid; }
+.pad.wait .say { color: var(--bad); }
+.pad.go { background: var(--good); border-color: var(--good); border-style: solid; }
+.pad.go .say, .pad.go .sub { color: var(--on-good); }
+.rounds { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 26px; }
+.rounds .badge { font-variant-numeric: tabular-nums; }
+
+/* 4) Yazım testi */
+.typebox {
+  position: relative;
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+.typebox:focus-within { border-color: var(--accent); }
+.typewin {
+  position: relative;
+  height: calc(3 * 1.75em);
+  overflow: hidden;
+  font: 500 clamp(18px, 4.2vw, 22px)/1.75 var(--font-mono);
+  color: var(--muted);
+  overflow-wrap: break-word;
+}
+.typewin .w { white-space: nowrap; }
+.typewin .c { position: relative; border-radius: 2px; }
+.typewin .c.ok { color: var(--fg); }
+.typewin .c.no { color: var(--bad); background: var(--bad-soft); }
+.typewin .c.sp.no { background: var(--bad); }
+.typewin .c.cur::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: .2em;
+  bottom: .2em;
+  width: 2px;
+  background: var(--accent);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.typebox textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  resize: none;
+  border: none;
+  cursor: text;
+  font-size: 16px;
+}
+.typebox .focus-note {
+  position: absolute;
+  right: 14px;
+  bottom: -11px;
+  font-size: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 1px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.typebox:focus-within .focus-note { display: none; }
+.result {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.result .headline { font: 700 clamp(40px, 10vw, 56px) var(--font-mono); line-height: 1; font-variant-numeric: tabular-nums; }
+.result .headline small { font: 500 15px var(--font-display); color: var(--muted); margin-left: 6px; }
+
+/* 5) Hedef testi */
+.arena {
+  position: relative;
+  width: 100%;
+  height: clamp(300px, 52vh, 420px);
+  border-radius: 20px;
+  border: 1.5px solid var(--line);
+  background:
+    radial-gradient(circle, var(--line) 1px, transparent 1.5px) 0 0 / 22px 22px,
+    var(--surface);
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.arena .center { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; text-align: center; padding: 16px; }
+.target {
+  position: absolute;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: crosshair;
+  background: radial-gradient(circle, var(--on-accent) 0 14%, var(--accent) 15% 38%, var(--on-accent) 39% 56%, var(--accent) 57% 100%);
+  box-shadow: 0 0 0 2px var(--accent-press);
+  animation: pop .14s ease-out;
+}
+@keyframes pop { from { transform: scale(.4); } to { transform: scale(1); } }
+.miss {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  pointer-events: none;
+  animation: fade .6s forwards;
+}
+.miss::before, .miss::after { content: ""; position: absolute; left: 6px; top: 0; width: 2px; height: 14px; background: var(--bad); }
+.miss::before { transform: rotate(45deg); }
+.miss::after { transform: rotate(-45deg); }
+@keyframes fade { to { opacity: 0; } }
+.arena .progress { position: absolute; top: 10px; left: 14px; font: 500 13px var(--font-mono); color: var(--muted); pointer-events: none; }
+
+/* 6) Kronometre */
+.clock {
+  background: var(--window);
+  color: var(--digit);
+  border-radius: 18px;
+  padding: 18px 26px;
+  font: 700 clamp(40px, 11vw, 64px) var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.clock small { font-size: .55em; opacity: .75; }
+.laps { width: min(420px, 100%); border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.laps th { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.laps th:first-child, .laps td:first-child { text-align: left; }
+.laps td { font: 500 15px var(--font-mono); text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.laps tr.best td:nth-child(2) { color: var(--good); }
+.laps tr.worst td:nth-child(2) { color: var(--bad); }
+.laps-wrap { width: min(420px, 100%); max-height: 300px; overflow-y: auto; }
+
+/* 7) Tempo */
+.tap {
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  border: 2px solid var(--body-edge);
+  background: var(--body);
+  color: var(--fg);
+  font: 800 22px var(--font-display);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .08s;
+}
+.tap:focus-visible { outline: 3px solid var(--accent); outline-offset: 6px; }
+.tap.beat { transform: scale(.94); background: var(--accent); color: var(--on-accent); border-color: var(--accent); transition: none; }
+.bpm { text-align: center; }
+.bpm b { display: block; font: 700 clamp(56px, 16vw, 84px) var(--font-mono); line-height: 1; font-variant-numeric: tabular-nums; }
+.bpm span { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+.term { font-size: 20px; font-weight: 800; font-style: italic; min-height: 30px; }
+
+/* 8) Metin sayacı */
+.textarea {
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  font: 400 16px/1.6 var(--font-display);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.textarea:focus { outline: none; border-color: var(--accent); }
+.limits { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.limit { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); }
+.limit .lbl { display: flex; justify-content: space-between; gap: 6px; }
+.limit .lbl b { font: 500 12px var(--font-mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+.limit .track { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.limit .fill { height: 100%; background: var(--good); border-radius: 3px; }
+.limit.near .fill { background: var(--warn); }
+.limit.over .fill { background: var(--bad); }
+.limit.over .lbl b { color: var(--bad); }
+.freq { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 26px; }
+@media (max-width: 520px) {
+  .limits { grid-template-columns: minmax(0, 1fr); }
+  .stats.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.foot { text-align: center; font-size: 12px; color: var(--muted); }
+.foot a { color: inherit; }
+.foot a:hover { color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .strip, .press, .tap { transition: none; }
+  .ripple, .target, .miss, .typewin .c.cur::before { animation: none; }
+  .ripple { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Tık Sayacı</h1>
+    <p class="lead">Say, ölç, kendini dene. Dokuz küçük araç, hepsi tek sayfada.</p>
+  </header>
+
+  <nav class="picker" aria-label="Araçlar">
+    <div class="group">
+      <span class="group-label">Say</span>
+      <div class="chips">
+        <button class="chip" type="button" data-go="sayac">Sayaç</button>
+        <button class="chip" type="button" data-go="coklu">Çoklu sayaç</button>
+        <button class="chip" type="button" data-go="kronometre">Kronometre</button>
+        <button class="chip" type="button" data-go="tempo">Tempo</button>
+        <button class="chip" type="button" data-go="metin">Metin</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="group-label">Test et</span>
+      <div class="chips">
+        <button class="chip" type="button" data-go="yazim">Yazım</button>
+        <button class="chip" type="button" data-go="cps">Tık hızı</button>
+        <button class="chip" type="button" data-go="tepki">Tepki</button>
+        <button class="chip" type="button" data-go="hedef">Hedef</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Sayaç -->
+    <section class="tool" data-tool="sayac" hidden>
+      <div class="tool-head">
+        <h2>Sayaç</h2>
+        <p>Butona bas, sayaç bir artsın. Sayı tarayıcında saklanır.</p>
+      </div>
+      <div class="device">
+        <div class="window" id="tWindow" role="status" aria-live="polite" aria-label="Tıklama sayısı: 0"></div>
+        <button class="press" id="tPress" type="button">Tıkla</button>
+        <div class="row" id="tResetRow"></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="tSession">0</b><small>Bu oturum</small></div>
+        <div class="stat"><b id="tCps">0,0</b><small>Tık / saniye</small></div>
+        <div class="stat"><b id="tBest">0,0</b><small>En hızlı</small></div>
+      </div>
+      <p class="hint"><kbd>Boşluk</kbd> veya <kbd>Enter</kbd> ile artır, <kbd>Geri</kbd> ile bir azalt.</p>
+    </section>
+
+    <!-- Çoklu sayaç -->
+    <section class="tool" data-tool="coklu" hidden>
+      <div class="tool-head">
+        <h2>Çoklu sayaç</h2>
+        <p>Birden fazla şeyi aynı anda say: bardak, tur, set, kişi. İsme tıklayıp değiştirebilirsin.</p>
+      </div>
+      <div class="panel">
+        <ul class="counters" id="mList"></ul>
+        <form class="add" id="mAdd">
+          <input id="mName" type="text" maxlength="40" placeholder="Yeni sayaç adı" aria-label="Yeni sayaç adı" autocomplete="off">
+          <button class="btn" type="submit">Ekle</button>
+        </form>
+        <div class="total-line"><span id="mCount">0 sayaç</span><span>Toplam <b id="mTotal">0</b></span></div>
+      </div>
+      <div class="row" id="mResetRow"></div>
+      <p class="hint"><kbd>1</kbd>–<kbd>9</kbd> ilgili sayacı artırır, <kbd>Shift</kbd> ile birlikte azaltır.</p>
+    </section>
+
+    <!-- Kronometre -->
+    <section class="tool" data-tool="kronometre" hidden>
+      <div class="tool-head">
+        <h2>Kronometre</h2>
+        <p>Tur zamanlarını kaydet. Sayfayı kapatsan da çalışmaya devam eder.</p>
+      </div>
+      <div class="clock" id="swClock" role="timer" aria-live="off">00:00<small>,00</small></div>
+      <div class="row">
+        <button class="btn" id="swStart" type="button">Başlat</button>
+        <button class="ghost" id="swLap" type="button" disabled>Tur</button>
+        <button class="ghost" id="swReset" type="button" disabled>Sıfırla</button>
+      </div>
+      <div class="laps-wrap" id="swLapsWrap" hidden>
+        <table class="laps">
+          <thead><tr><th scope="col">Tur</th><th scope="col">Tur süresi</th><th scope="col">Toplam</th></tr></thead>
+          <tbody id="swLaps"></tbody>
+        </table>
+      </div>
+      <p class="hint"><kbd>Boşluk</kbd> başlat/durdur, <kbd>T</kbd> tur al, <kbd>R</kbd> durmuşken sıfırla.</p>
+    </section>
+
+    <!-- Tempo -->
+    <section class="tool" data-tool="tempo" hidden>
+      <div class="tool-head">
+        <h2>Tempo ölçer</h2>
+        <p>Şarkının vuruşuna eşlik ederek dokun; dakikadaki vuruş sayısını (BPM) hesaplar.</p>
+      </div>
+      <div class="bpm"><b id="bpmVal">—</b><span>BPM</span></div>
+      <div class="term" id="bpmTerm" aria-live="polite">Vuruşa eşlik et</div>
+      <button class="tap" id="bpmTap" type="button">Vur</button>
+      <div class="stats">
+        <div class="stat"><b id="bpmTaps">0</b><small>Vuruş</small></div>
+        <div class="stat"><b id="bpmMs">—</b><small>Aralık (ms)</small></div>
+        <div class="stat"><b id="bpmSteady">—</b><small>Düzenlilik</small></div>
+      </div>
+      <p class="hint">Herhangi bir tuşla da vurabilirsin. 2 saniye ara verince ölçüm baştan başlar.</p>
+    </section>
+
+    <!-- Metin sayacı -->
+    <section class="tool" data-tool="metin" hidden>
+      <div class="tool-head">
+        <h2>Metin sayacı</h2>
+        <p>Karakter, kelime, cümle ve okuma süresi. Metin yalnızca senin tarayıcında kalır.</p>
+      </div>
+      <textarea class="textarea" id="txIn" aria-label="Sayılacak metin" spellcheck="true"></textarea>
+      <div class="stats four" style="--w:760px">
+        <div class="stat"><b id="txChars">0</b><small>Karakter</small></div>
+        <div class="stat"><b id="txNoSp">0</b><small>Boşluksuz</small></div>
+        <div class="stat"><b id="txWords">0</b><small>Kelime</small></div>
+        <div class="stat"><b id="txSent">0</b><small>Cümle</small></div>
+        <div class="stat"><b id="txPara">0</b><small>Paragraf</small></div>
+        <div class="stat"><b id="txRead">0 sn</b><small>Okuma</small></div>
+        <div class="stat"><b id="txSpeak">0 sn</b><small>Sesli okuma</small></div>
+        <div class="stat"><b id="txAvg">0,0</b><small>Ort. kelime boyu</small></div>
+      </div>
+      <div class="limits" id="txLimits"></div>
+      <div class="freq" id="txFreq" aria-label="En sık kelimeler"></div>
+      <div class="row">
+        <button class="ghost" id="txSample" type="button">Örnek metin</button>
+        <button class="ghost" id="txClear" type="button">Temizle</button>
+      </div>
+      <p class="hint">Okuma süresi dakikada 200, sesli okuma 130 kelimeye göre hesaplanır.</p>
+    </section>
+
+    <!-- Yazım testi -->
+    <section class="tool" data-tool="yazim" hidden>
+      <div class="tool-head">
+        <h2>Klavye yazım testi</h2>
+        <p>Metni olabildiğince hızlı ve doğru yaz. Süre ilk tuşta başlar.</p>
+      </div>
+      <div class="opts">
+        <span class="opt-name">Süre</span>
+        <div class="seg" id="tyDur" role="group" aria-label="Süre">
+          <button type="button" data-v="15">15 sn</button>
+          <button type="button" data-v="30">30 sn</button>
+          <button type="button" data-v="60">60 sn</button>
+          <button type="button" data-v="120">2 dk</button>
+        </div>
+        <span class="opt-name">Metin</span>
+        <div class="seg" id="tyMode" role="group" aria-label="Metin türü">
+          <button type="button" data-v="cumle">Cümleler</button>
+          <button type="button" data-v="kelime">Sık kelimeler</button>
+        </div>
+        <label><input type="checkbox" id="tyLoose"> ı/i, ş/s, ğ/g… aynı say</label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="tyTime">60</b><small>Kalan sn</small></div>
+        <div class="stat"><b id="tyWpm">0</b><small>Kelime / dk</small></div>
+        <div class="stat"><b id="tyAcc">100%</b><small>Doğruluk</small></div>
+      </div>
+      <div class="typebox" id="tyBox">
+        <div class="typewin" id="tyWin" aria-hidden="true"></div>
+        <textarea id="tyIn" aria-label="Yazım alanı: üstteki metni yaz" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        <span class="focus-note">Yazmak için tıkla</span>
+      </div>
+      <div class="result" id="tyResult" hidden aria-live="polite"></div>
+      <div class="row">
+        <button class="ghost" id="tyRestart" type="button">Yeni metin</button>
+      </div>
+      <p class="hint"><kbd>Esc</kbd> yeni metin getirir. Hız, 5 karakter = 1 kelime kuralıyla ve yalnızca doğru karakterlerle hesaplanır.</p>
+    </section>
+
+    <!-- Tık hızı -->
+    <section class="tool" data-tool="cps" hidden>
+      <div class="tool-head">
+        <h2>Tık hızı testi</h2>
+        <p>Süre dolana kadar alana olabildiğince hızlı tıkla. Saniyedeki tık sayını (CPS) ölçer.</p>
+      </div>
+      <div class="opts">
+        <span class="opt-name">Süre</span>
+        <div class="seg" id="cpsDur" role="group" aria-label="Süre">
+          <button type="button" data-v="1">1 sn</button>
+          <button type="button" data-v="5">5 sn</button>
+          <button type="button" data-v="10">10 sn</button>
+          <button type="button" data-v="30">30 sn</button>
+        </div>
+      </div>
+      <div class="pad" id="cpsPad">
+        <span class="say" id="cpsSay">Başlamak için tıkla</span>
+        <span class="big" id="cpsBig">0</span>
+        <span class="sub" id="cpsSub">İlk tık süreyi başlatır</span>
+      </div>
+      <div class="panel" id="cpsChart" hidden>
+        <div class="bars" id="cpsBars"></div>
+        <div class="bars-axis"><span>1. sn</span><span id="cpsAxisEnd"></span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="cpsLast">—</b><small>Son sonuç</small></div>
+        <div class="stat"><b id="cpsClicks">—</b><small>Toplam tık</small></div>
+        <div class="stat"><b id="cpsBest">—</b><small>Rekor (bu süre)</small></div>
+      </div>
+    </section>
+
+    <!-- Tepki süresi -->
+    <section class="tool" data-tool="tepki" hidden>
+      <div class="tool-head">
+        <h2>Tepki süresi</h2>
+        <p>Alan yeşile döndüğü an tıkla. 5 denemenin ortalaması alınır.</p>
+      </div>
+      <div class="pad" id="rxPad" tabindex="0" role="button" aria-describedby="rxSub">
+        <span class="say" id="rxSay">Başlamak için tıkla</span>
+        <span class="big" id="rxBig" hidden></span>
+        <span class="sub" id="rxSub">Kırmızıyken bekle, yeşil olunca bas</span>
+      </div>
+      <div class="rounds" id="rxRounds" aria-label="Deneme sonuçları"></div>
+      <div class="stats">
+        <div class="stat"><b id="rxAvg">—</b><small>Ortalama</small></div>
+        <div class="stat"><b id="rxMin">—</b><small>En iyi deneme</small></div>
+        <div class="stat"><b id="rxBest">—</b><small>Rekor ortalama</small></div>
+      </div>
+      <p class="hint"><kbd>Boşluk</kbd> tuşuyla da oynayabilirsin. Çoğu insan 200–300 ms arasında tepki verir.</p>
+    </section>
+
+    <!-- Hedef testi -->
+    <section class="tool" data-tool="hedef" hidden>
+      <div class="tool-head">
+        <h2>Hedef testi</h2>
+        <p>Beliren 20 hedefe sırayla tıkla. Hız ve isabet ölçülür; boşa tıklamalar ıska sayılır.</p>
+      </div>
+      <div class="opts">
+        <span class="opt-name">Hedef boyu</span>
+        <div class="seg" id="aimSize" role="group" aria-label="Hedef boyu">
+          <button type="button" data-v="64">Büyük</button>
+          <button type="button" data-v="44">Orta</button>
+          <button type="button" data-v="28">Küçük</button>
+        </div>
+      </div>
+      <div class="arena" id="aimArena">
+        <span class="progress" id="aimProg"></span>
+        <div class="center" id="aimCenter">
+          <button class="btn" id="aimStart" type="button">Başla</button>
+          <span class="hint" id="aimNote">İlk hedef hemen belirir.</span>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="aimAvg">—</b><small>Hedef başına</small></div>
+        <div class="stat"><b id="aimAcc">—</b><small>İsabet</small></div>
+        <div class="stat"><b id="aimBest">—</b><small>Rekor (bu boy)</small></div>
+      </div>
+    </section>
+  </main>
+
+  <p class="foot"><a href="https://ugur-labs.com" target="_blank" rel="noopener noreferrer">Ugur Labs</a> · Veriler yalnızca bu tarayıcıda saklanır.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const nf = (d) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const f0 = nf(0), f1 = nf(1), f2 = nf(2);
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Tarayıcı deposu: gizli pencerede veya engelliyse sessizce varsayılana döner
+  const store = {
+    get(k, d) {
+      try { const v = localStorage.getItem("tik-sayaci:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
+    },
+    set(k, v) { try { localStorage.setItem("tik-sayaci:" + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // Sayfa içi onay: alert/confirm yerine aynı satırda "Emin misin?"
+  function confirmRow(row, label, question, onYes) {
+    function idle() {
+      row.innerHTML = "";
+      const b = document.createElement("button");
+      b.className = "ghost"; b.type = "button"; b.textContent = label;
+      b.addEventListener("click", ask);
+      row.appendChild(b);
+    }
+    function ask() {
+      row.innerHTML =
+        '<span class="confirm-text">' + question + "</span>" +
+        '<button class="ghost danger" type="button">Evet</button>' +
+        '<button class="ghost" type="button">Vazgeç</button>';
+      const [yes, no] = row.querySelectorAll("button");
+      yes.addEventListener("click", () => { onYes(); idle(); });
+      no.addEventListener("click", idle);
+      no.focus();
+    }
+    idle();
+  }
+
+  // Seçenek grupları (süre, boyut...)
+  function segmented(el, value, onChange) {
+    const buttons = [...el.querySelectorAll("button")];
+    function set(v) {
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(v))));
+    }
+    buttons.forEach((b) => b.addEventListener("click", () => { set(b.dataset.v); onChange(b.dataset.v); }));
+    set(value);
+  }
+
+  function clock(ms) {
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 60;
+    const h = Math.floor(ms / 3600000);
+    const p = (n) => String(n).padStart(2, "0");
+    return { main: (h ? h + ":" : "") + p(m) + ":" + p(s), cs: "," + p(cs), text: (h ? h + ":" : "") + p(m) + ":" + p(s) + "," + p(cs) };
+  }
+
+  const tools = {};
+
+  /* ---------- 1) Sayaç ---------- */
+  tools.sayac = (function () {
+    const DIGITS = 4;
+    const win = $("tWindow"), press = $("tPress");
+    let state = store.get("sayac", null);
+    if (!state) {
+      // Eski sürümün kaydı
+      try { const old = JSON.parse(localStorage.getItem("tik-sayaci")); if (old && typeof old.count === "number") state = old; } catch (e) {}
+    }
+    state = { count: (state && state.count) || 0, best: (state && state.best) || 0 };
+    let session = 0, recent = [];
+
+    const strips = [];
+    for (let i = 0; i < DIGITS; i++) {
+      const wheel = document.createElement("div");
+      wheel.className = "wheel";
+      const strip = document.createElement("div");
+      strip.className = "strip";
+      for (let d = 0; d <= 9; d++) { const s = document.createElement("span"); s.textContent = d; strip.appendChild(s); }
+      wheel.appendChild(strip);
+      win.appendChild(wheel);
+      strips.push(strip);
+    }
+    function render() {
+      const str = String(state.count % Math.pow(10, DIGITS)).padStart(DIGITS, "0");
+      strips.forEach((strip, i) => { strip.style.transform = "translateY(" + (-58 * Number(str[i])) + "px)"; });
+      win.setAttribute("aria-label", "Tıklama sayısı: " + state.count);
+      $("tSession").textContent = f0.format(session);
+      $("tBest").textContent = f1.format(state.best);
+    }
+    function rate() {
+      const now = performance.now();
+      recent = recent.filter((t) => now - t < 1000);
+      $("tCps").textContent = f1.format(recent.length);
+      if (recent.length > state.best) { state.best = recent.length; store.set("sayac", state); $("tBest").textContent = f1.format(state.best); }
+    }
+    setInterval(rate, 250);
+    function add(n) {
+      if (n < 0 && state.count === 0) return;
+      state.count += n;
+      session = Math.max(0, session + n);
+      if (n > 0) recent.push(performance.now());
+      store.set("sayac", state);
+      render();
+      rate();
+    }
+    press.addEventListener("click", () => add(1));
+    confirmRow($("tResetRow"), "Sıfırla", "Emin misin?", () => {
+      state = { count: 0, best: 0 }; session = 0; recent = [];
+      store.set("sayac", state); render(); rate(); press.focus();
+    });
+    render();
+    return {
+      focus: press,
+      key(e) {
+        if ((e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter" || e.code === "NumpadAdd") && !e.repeat) {
+          e.preventDefault(); press.classList.add("down"); add(1);
+        } else if (e.code === "Backspace" || e.code === "Minus" || e.code === "NumpadSubtract") {
+          e.preventDefault(); add(-1);
+        }
+      },
+      keyup() { press.classList.remove("down"); }
+    };
+  })();
+
+  /* ---------- 2) Çoklu sayaç ---------- */
+  tools.coklu = (function () {
+    const list = $("mList");
+    let items = store.get("coklu", null);
+    if (!Array.isArray(items)) {
+      // İlk açılış için örnek sayaçlar
+      items = [
+        { id: 1, name: "Su (bardak)", n: 3 },
+        { id: 2, name: "Kahve", n: 1 },
+        { id: 3, name: "Şınav seti", n: 0 }
+      ];
+    }
+    let nextId = items.reduce((m, it) => Math.max(m, it.id), 0) + 1;
+    let armed = null, armTimer = 0;
+    const save = () => store.set("coklu", items);
+
+    function render() {
+      list.innerHTML = items.map((it, i) =>
+        '<li class="counter" data-id="' + it.id + '">' +
+          '<span class="idx">' + (i < 9 ? i + 1 : "") + "</span>" +
+          '<input type="text" maxlength="40" value="' + escapeHtml(it.name) + '" aria-label="Sayaç adı" id="m-name-' + it.id + '">' +
+          '<button class="round" type="button" data-act="dec" aria-label="' + escapeHtml(it.name) + ' azalt">−</button>' +
+          '<output aria-live="polite">' + f0.format(it.n) + "</output>" +
+          '<button class="round plus" type="button" data-act="inc" aria-label="' + escapeHtml(it.name) + ' artır">+</button>' +
+          '<button class="del' + (armed === it.id ? " armed" : "") + '" type="button" data-act="del" aria-label="' + escapeHtml(it.name) + ' sil">' + (armed === it.id ? "Sil?" : "✕") + "</button>" +
+        "</li>").join("");
+      totals();
+    }
+    function totals() {
+      $("mTotal").textContent = f0.format(items.reduce((s, it) => s + it.n, 0));
+      $("mCount").textContent = items.length + " sayaç";
+    }
+    function bump(it, d) {
+      it.n = Math.max(0, it.n + d);
+      save();
+      const out = list.querySelector('[data-id="' + it.id + '"] output');
+      if (out) out.textContent = f0.format(it.n);
+      totals();
+    }
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const id = Number(btn.closest("li").dataset.id);
+      const it = items.find((x) => x.id === id);
+      if (btn.dataset.act === "inc") bump(it, 1);
+      else if (btn.dataset.act === "dec") bump(it, -1);
+      else if (btn.dataset.act === "del") {
+        // İki adımlı silme: ilk tık onay ister, 3 sn içinde ikinci tık siler
+        clearTimeout(armTimer);
+        if (armed === id) { items = items.filter((x) => x.id !== id); armed = null; save(); }
+        else {
+          armed = id;
+          armTimer = setTimeout(() => {
+            const b = list.querySelector('[data-id="' + id + '"] .del');
+            armed = null;
+            if (b) { b.classList.remove("armed"); b.textContent = "✕"; }
+          }, 3000);
+        }
+        render();
+        const again = list.querySelector('[data-id="' + id + '"] .del');
+        if (again) again.focus();
+      }
+    });
+    list.addEventListener("input", (e) => {
+      if (e.target.tagName !== "INPUT") return;
+      const it = items.find((x) => x.id === Number(e.target.closest("li").dataset.id));
+      it.name = e.target.value;
+      save();
+    });
+    list.addEventListener("keydown", (e) => { if (e.target.tagName === "INPUT" && e.key === "Enter") e.target.blur(); });
+    $("mAdd").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = $("mName").value.trim();
+      if (!name) { $("mName").focus(); return; }
+      if (items.length >= 20) { $("mName").value = ""; $("mName").placeholder = "En fazla 20 sayaç olabilir"; return; }
+      items.push({ id: nextId++, name, n: 0 });
+      $("mName").value = "";
+      save(); render();
+    });
+    confirmRow($("mResetRow"), "Hepsini sıfırla", "Tüm sayılar 0 olsun mu?", () => {
+      items.forEach((it) => { it.n = 0; }); save(); render();
+    });
+    render();
+    return {
+      key(e) {
+        const m = /^Digit([1-9])$/.exec(e.code) || /^Numpad([1-9])$/.exec(e.code);
+        if (!m) return;
+        const it = items[Number(m[1]) - 1];
+        if (!it) return;
+        e.preventDefault();
+        bump(it, e.shiftKey ? -1 : 1);
+      }
+    };
+  })();
+
+  /* ---------- 3) Kronometre ---------- */
+  tools.kronometre = (function () {
+    // Durum Date.now() ile saklanır; sayfa yeniden açılınca kaldığı yerden sürer
+    let s = store.get("kronometre", null) || { acc: 0, since: 0, laps: [] };
+    const el = $("swClock"), startBtn = $("swStart"), lapBtn = $("swLap"), resetBtn = $("swReset");
+    let raf = 0;
+    const running = () => s.since > 0;
+    const elapsed = () => s.acc + (running() ? Date.now() - s.since : 0);
+    const save = () => store.set("kronometre", s);
+
+    function paint() {
+      const c = clock(elapsed());
+      el.innerHTML = c.main + "<small>" + c.cs + "</small>";
+    }
+    function loop() { paint(); raf = running() ? requestAnimationFrame(loop) : 0; }
+    function controls() {
+      startBtn.textContent = running() ? "Durdur" : (elapsed() > 0 ? "Devam" : "Başlat");
+      lapBtn.disabled = !running();
+      resetBtn.disabled = running() || elapsed() === 0;
+    }
+    function laps() {
+      $("swLapsWrap").hidden = s.laps.length === 0;
+      const durs = s.laps.map((t, i) => t - (i ? s.laps[i - 1] : 0));
+      const min = Math.min(...durs), max = Math.max(...durs);
+      $("swLaps").innerHTML = durs.map((d, i) => {
+        const cls = durs.length >= 3 ? (d === min ? "best" : d === max ? "worst" : "") : "";
+        return '<tr class="' + cls + '"><td>' + (i + 1) + "</td><td>" + clock(d).text + "</td><td>" + clock(s.laps[i]).text + "</td></tr>";
+      }).reverse().join("");
+    }
+    function toggle() {
+      if (running()) { s.acc = elapsed(); s.since = 0; }
+      else { s.since = Date.now(); if (!raf) loop(); }
+      save(); controls(); paint();
+    }
+    function lap() {
+      if (!running()) return;
+      s.laps.push(elapsed()); save(); laps();
+    }
+    function reset() {
+      if (running()) return;
+      s = { acc: 0, since: 0, laps: [] }; save(); paint(); laps(); controls();
+    }
+    startBtn.addEventListener("click", toggle);
+    lapBtn.addEventListener("click", lap);
+    resetBtn.addEventListener("click", reset);
+    paint(); laps(); controls();
+    return {
+      focus: startBtn,
+      enter() { if (running() && !raf) loop(); },
+      leave() { cancelAnimationFrame(raf); raf = 0; },
+      key(e) {
+        if (e.code === "Space" && !e.repeat) { e.preventDefault(); toggle(); }
+        else if (e.code === "KeyT" || e.code === "KeyL") { e.preventDefault(); lap(); }
+        else if (e.code === "KeyR") { e.preventDefault(); reset(); }
+      }
+    };
+  })();
+
+  /* ---------- 4) Tempo ---------- */
+  tools.tempo = (function () {
+    const tap = $("bpmTap");
+    let taps = [];
+    const terms = [[60, "Largo"], [66, "Larghetto"], [76, "Adagio"], [108, "Andante"], [120, "Moderato"], [156, "Allegro"], [176, "Vivace"], [200, "Presto"], [Infinity, "Prestissimo"]];
+    function hit() {
+      const now = performance.now();
+      if (taps.length && now - taps[taps.length - 1] > 2000) taps = [];
+      taps.push(now);
+      if (taps.length > 13) taps.shift();
+      tap.classList.add("beat");
+      setTimeout(() => tap.classList.remove("beat"), 90);
+      $("bpmTaps").textContent = taps.length;
+      if (taps.length < 2) {
+        $("bpmVal").textContent = "—"; $("bpmMs").textContent = "—"; $("bpmSteady").textContent = "—";
+        $("bpmTerm").textContent = "Vurmaya devam et";
+        return;
+      }
+      const gaps = taps.slice(1).map((t, i) => t - taps[i]);
+      const avg = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const bpm = 60000 / avg;
+      // Düzenlilik: aralıkların ortalamadan sapması ne kadar küçükse o kadar yüksek
+      const sd = Math.sqrt(gaps.reduce((a, g) => a + (g - avg) * (g - avg), 0) / gaps.length);
+      $("bpmVal").textContent = f0.format(bpm);
+      $("bpmMs").textContent = f0.format(avg);
+      $("bpmSteady").textContent = gaps.length < 3 ? "—" : "%" + f0.format(Math.max(0, 100 - (sd / avg) * 100));
+      $("bpmTerm").textContent = terms.find(([lim]) => bpm < lim)[1];
+    }
+    tap.addEventListener("pointerdown", (e) => { if (e.button === 0) hit(); });
+    tap.addEventListener("keydown", (e) => {
+      if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); if (!e.repeat) hit(); e.stopPropagation(); }
+    });
+    return {
+      focus: tap,
+      key(e) {
+        if (e.repeat || ["Tab", "Escape", "Shift", "Control", "Alt", "Meta", "CapsLock"].includes(e.key)) return;
+        e.preventDefault(); hit();
+      }
+    };
+  })();
+
+  /* ---------- 5) Metin sayacı ---------- */
+  tools.metin = (function () {
+    const ta = $("txIn");
+    const SAMPLE =
+      "Örnek metin: Bu alana yazdığın ya da yapıştırdığın her şey anında sayılır. Karakter, kelime, cümle ve paragraf sayısını aşağıda görebilirsin.\n\n" +
+      "Sosyal medya gönderisi, SMS veya arama motoru açıklaması yazarken sınırları aşıp aşmadığını çubuklar gösterir. Yeşil uygun, sarı sınıra yakın, kırmızı ise sınırın üstünde demektir.";
+    const LIMITS = [["X gönderisi", 280], ["SMS (tek mesaj)", 160], ["Meta açıklaması", 160]];
+    const STOP = new Set("ve ile bir bu şu o da de ki mi mı mu mü için gibi çok daha en ama fakat veya ya ne her hem ise olan olarak sonra önce kadar the and of to a in is".split(" "));
+    const dur = (min) => {
+      const sec = Math.round(min * 60);
+      return sec < 60 ? sec + " sn" : Math.floor(sec / 60) + " dk " + (sec % 60 ? (sec % 60) + " sn" : "");
+    };
+    $("txLimits").innerHTML = LIMITS.map(([name, max], i) =>
+      '<div class="limit" id="txLim' + i + '"><div class="lbl"><span>' + name + "</span><b></b></div><div class=\"track\"><div class=\"fill\"></div></div></div>").join("");
+
+    function update() {
+      const t = ta.value;
+      const chars = [...t].length;
+      const words = t.match(/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu) || [];
+      const sentences = t.split(/[.!?…]+(?:\s|$)/).filter((x) => /[\p{L}\p{N}]/u.test(x)).length;
+      const paras = t.split(/\n\s*\n/).filter((x) => x.trim()).length;
+      $("txChars").textContent = f0.format(chars);
+      $("txNoSp").textContent = f0.format([...t.replace(/\s/g, "")].length);
+      $("txWords").textContent = f0.format(words.length);
+      $("txSent").textContent = f0.format(sentences);
+      $("txPara").textContent = f0.format(paras);
+      $("txRead").textContent = dur(words.length / 200).trim();
+      $("txSpeak").textContent = dur(words.length / 130).trim();
+      $("txAvg").textContent = f1.format(words.length ? words.reduce((a, w) => a + [...w].length, 0) / words.length : 0);
+      LIMITS.forEach(([, max], i) => {
+        const el = $("txLim" + i);
+        el.classList.toggle("over", chars > max);
+        el.classList.toggle("near", chars <= max && chars > max * 0.9);
+        el.querySelector("b").textContent = chars + " / " + max;
+        el.querySelector(".fill").style.width = Math.min(100, (chars / max) * 100) + "%";
+      });
+      const freq = {};
+      words.forEach((w) => {
+        const k = w.toLocaleLowerCase("tr-TR");
+        if ([...k].length > 2 && !STOP.has(k)) freq[k] = (freq[k] || 0) + 1;
+      });
+      const top = Object.entries(freq).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      $("txFreq").innerHTML = top.length
+        ? top.map(([w, n]) => '<span class="badge">' + escapeHtml(w) + " × " + n + "</span>").join("")
+        : '<span class="hint">Tekrar eden kelimeler burada görünür.</span>';
+    }
+    let saveTimer = 0;
+    ta.addEventListener("input", () => {
+      update();
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => store.set("metin", ta.value), 400);
+    });
+    $("txSample").addEventListener("click", () => { ta.value = SAMPLE; store.set("metin", ta.value); update(); ta.focus(); });
+    $("txClear").addEventListener("click", () => { ta.value = ""; store.set("metin", ""); update(); ta.focus(); });
+    const saved = store.get("metin", null);
+    ta.value = saved == null ? SAMPLE : saved;
+    update();
+    return {};
+  })();
+
+  /* ---------- 6) Yazım testi ---------- */
+  tools.yazim = (function () {
+    const SENTENCES = [
+      "Sabah erkenden kalkıp pencereyi açınca serin bir rüzgar yüzüme dokundu.",
+      "Küçük kedi, güneşli balkonda kıvrılıp öğleden sonraya kadar uyudu.",
+      "İyi bir alışkanlık edinmek için her gün aynı saatte kısa bir yürüyüş yap.",
+      "Çarşıdaki fırından taze simit alıp çayın yanında afiyetle yedik.",
+      "Öğretmenimiz derse başlamadan önce herkesin ödevini tek tek kontrol etti.",
+      "Şehrin ışıkları gece yarısı bile sönmüyor, sokaklar hep kalabalık.",
+      "Yağmur dinince çocuklar parka koştu ve su birikintilerinde zıpladı.",
+      "Bilgisayarın başında uzun süre oturduktan sonra gözlerini dinlendirmeyi unutma.",
+      "Dağın zirvesine ulaştığımızda bütün vadi ayaklarımızın altındaydı.",
+      "Kütüphanede sessizce kitap okuyan öğrenciler sınav haftasına hazırlanıyordu.",
+      "Pazar günü ailece kahvaltı yapıp öğleden sonra sahilde bisiklete bindik.",
+      "Yeni bir dil öğrenmek sabır ister, ama her küçük ilerleme insanı mutlu eder.",
+      "Ağaçların yaprakları sonbaharda sarıya, turuncuya ve kırmızıya döner.",
+      "Uçağımız rötar yapınca havalimanında iki saat daha beklemek zorunda kaldık.",
+      "Mutfakta pişen mercimek çorbasının kokusu bütün evi sardı.",
+      "Doğru yazmak hızlı yazmaktan daha önemlidir; hız zamanla kendiliğinden gelir.",
+      "Gölün kıyısındaki eski değirmen, yıllardır kimsenin uğramadığı bir yere dönüşmüştü.",
+      "Müzeyi gezdikten sonra yakındaki küçük bir lokantada öğle yemeği yedik.",
+      "Her sabah on dakika klavye çalışması yaparsan parmakların kısa sürede alışır.",
+      "Telefonumun şarjı bitmek üzereydi, bu yüzden haritaya bakmadan yolu bulmaya çalıştım.",
+      "Akşam üstü gökyüzü pembe ve mor tonlarına boyandı.",
+      "Bahçedeki domatesler olgunlaşınca komşulara da birkaç tane götürdük.",
+      "Takım arkadaşları maçtan sonra soyunma odasında galibiyeti kutladı.",
+      "Zamanı iyi kullanmak, işleri küçük parçalara bölmekle başlar."
+    ];
+    const WORDS = ("ve bir bu da ne için çok ile daha ben sen o gibi kadar sonra zaman gün yıl iş ev su yol göz el kapı ses yer hayat " +
+      "insan çocuk şey dünya güzel büyük küçük yeni eski iyi kötü uzun kısa hızlı yavaş doğru yanlış açık sıcak soğuk önce şimdi " +
+      "bugün yarın akşam sabah gece hafta ay saat dakika kitap okul öğrenci öğretmen arkadaş aile şehir köy deniz dağ ağaç çiçek " +
+      "kuş kedi köpek yemek ekmek çay kahve şeker süt elma armut çalışmak okumak yazmak gitmek gelmek görmek bakmak bilmek " +
+      "düşünmek konuşmak dinlemek sevmek istemek başlamak bitirmek almak vermek söz soru cevap renk mavi yeşil kırmızı sarı beyaz " +
+      "siyah müzik oyun takım spor ışık gölge rüzgar yağmur kar güneş bulut").split(" ");
+    const LOOSE = { "ı": "i", "İ": "I", "ğ": "g", "Ğ": "G", "ü": "u", "Ü": "U", "ş": "s", "Ş": "S", "ö": "o", "Ö": "O", "ç": "c", "Ç": "C", "â": "a", "î": "i", "û": "u" };
+
+    const win = $("tyWin"), input = $("tyIn"), box = $("tyBox"), result = $("tyResult");
+    let opts = Object.assign({ dur: 60, mode: "cumle", loose: false }, store.get("yazim-ayar", {}));
+    let best = store.get("yazim-rekor", {});
+    let target = "", spans = [], typed = "", startAt = 0, tick = 0, total = 0, errors = 0, missed = {}, done = false;
+
+    const eq = (a, b) => a === b || (opts.loose && (LOOSE[a] || a) === (LOOSE[b] || b));
+    const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+    function makeText() {
+      // Her süre için yetecek uzunlukta metin
+      const need = Math.max(400, opts.dur * 14);
+      const out = [];
+      let len = 0;
+      while (len < need) {
+        const batch = opts.mode === "kelime" ? shuffle(WORDS.slice()) : shuffle(SENTENCES.slice());
+        for (const p of batch) { out.push(p); len += p.length + 1; if (len >= need) break; }
+      }
+      return out.join(" ");
+    }
+    function correctCount() {
+      let n = 0;
+      for (let i = 0; i < typed.length; i++) if (eq(typed[i], target[i])) n++;
+      return n;
+    }
+    function reset() {
+      clearInterval(tick);
+      target = makeText();
+      typed = ""; startAt = 0; total = 0; errors = 0; missed = {}; done = false;
+      input.value = ""; input.readOnly = false;
+      result.hidden = true; box.hidden = false;
+      // Kelimeler satır sonunda bölünmesin diye harfler kelime kutularına sarılır
+      const parts = target.split(/( )/);
+      win.innerHTML = parts.map((p) => p === " "
+        ? '<span class="c sp"> </span>'
+        : '<span class="w">' + [...p].map((ch) => '<span class="c">' + escapeHtml(ch) + "</span>").join("") + "</span>").join("");
+      spans = [...win.querySelectorAll(".c")];
+      win.scrollTop = 0;
+      spans[0].classList.add("cur");
+      $("tyTime").textContent = opts.dur;
+      $("tyWpm").textContent = "0";
+      $("tyAcc").textContent = "%100";
+    }
+    function live() {
+      const sec = (performance.now() - startAt) / 1000;
+      const left = Math.max(0, opts.dur - sec);
+      $("tyTime").textContent = Math.ceil(left);
+      $("tyWpm").textContent = f0.format(sec > 1 ? (correctCount() / 5) / (sec / 60) : 0);
+      $("tyAcc").textContent = "%" + f0.format(total ? ((total - errors) / total) * 100 : 100);
+      if (left <= 0) finish();
+    }
+    function finish() {
+      if (done) return;
+      done = true;
+      clearInterval(tick);
+      input.readOnly = true;
+      const sec = Math.min(opts.dur, (performance.now() - startAt) / 1000) || 1;
+      const correct = correctCount();
+      const wpm = (correct / 5) / (sec / 60);
+      const raw = (typed.length / 5) / (sec / 60);
+      const acc = total ? ((total - errors) / total) * 100 : 100;
+      const key = opts.dur + "-" + opts.mode;
+      const record = !best[key] || wpm > best[key];
+      if (record && wpm > 0) { best[key] = Math.round(wpm); store.set("yazim-rekor", best); }
+      const worst = Object.entries(missed).sort((a, b) => b[1] - a[1]).slice(0, 4)
+        .map(([ch, n]) => '<span class="badge">' + (ch === " " ? "boşluk" : escapeHtml(ch)) + " × " + n + "</span>").join("");
+      $("tyTime").textContent = "0";
+      $("tyWpm").textContent = f0.format(wpm);
+      $("tyAcc").textContent = "%" + f0.format(acc);
+      result.innerHTML =
+        '<div class="headline">' + f0.format(wpm) + "<small>kelime / dk</small></div>" +
+        (record && wpm > 0 ? '<span class="badge good">Yeni rekor</span>' : '<span class="badge">Rekor: ' + f0.format(best[key] || 0) + " kelime/dk</span>") +
+        '<div class="stats four" style="--w:560px">' +
+          '<div class="stat"><b>%' + f0.format(acc) + "</b><small>Doğruluk</small></div>" +
+          '<div class="stat"><b>' + f0.format(raw) + "</b><small>Ham hız</small></div>" +
+          '<div class="stat"><b>' + f0.format(correct) + "</b><small>Doğru karakter</small></div>" +
+          '<div class="stat"><b>' + f0.format(errors) + "</b><small>Hata</small></div>" +
+        "</div>" +
+        (worst ? '<div class="rounds"><span class="hint">En çok takıldığın harfler:</span>' + worst + "</div>" : "");
+      result.hidden = false;
+      box.hidden = true;
+      $("tyRestart").focus();
+    }
+    function paintFrom(from, to) {
+      for (let i = from; i < spans.length && i <= Math.max(typed.length, to); i++) {
+        const s = spans[i];
+        s.classList.remove("ok", "no", "cur");
+        if (i < typed.length) s.classList.add(eq(typed[i], target[i]) ? "ok" : "no");
+      }
+      const cur = spans[typed.length];
+      if (cur) {
+        cur.classList.add("cur");
+        // Etkin satır her zaman üstten ikinci satırda kalsın
+        const lineH = parseFloat(getComputedStyle(win).lineHeight);
+        win.scrollTop = Math.max(0, cur.offsetTop - lineH);
+      }
+    }
+    input.addEventListener("input", () => {
+      if (done) { input.value = typed; return; }
+      let v = input.value.replace(/\n/g, " ");
+      if (v.length > target.length) v = v.slice(0, target.length);
+      if (!startAt && v.length) { startAt = performance.now(); tick = setInterval(live, 200); }
+      let p = 0;
+      while (p < typed.length && p < v.length && typed[p] === v[p]) p++;
+      for (let i = p; i < v.length; i++) {
+        total++;
+        if (!eq(v[i], target[i])) { errors++; missed[target[i]] = (missed[target[i]] || 0) + 1; }
+      }
+      const oldLen = typed.length;
+      typed = v;
+      if (input.value !== v) input.value = v;
+      paintFrom(p, oldLen);
+      if (typed.length === target.length) finish();
+    });
+    // Kopyala-yapıştır ve imleci geri taşıma kapalı
+    input.addEventListener("paste", (e) => e.preventDefault());
+    input.addEventListener("drop", (e) => e.preventDefault());
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { e.preventDefault(); reset(); input.focus(); }
+      else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown"].includes(e.key) || e.key === "Enter") e.preventDefault();
+    });
+    input.addEventListener("select", () => { input.selectionStart = input.selectionEnd = input.value.length; });
+    $("tyRestart").addEventListener("click", () => { reset(); input.focus(); });
+    const saveOpts = () => store.set("yazim-ayar", opts);
+    segmented($("tyDur"), opts.dur, (v) => { opts.dur = Number(v); saveOpts(); reset(); input.focus(); });
+    segmented($("tyMode"), opts.mode, (v) => { opts.mode = v; saveOpts(); reset(); input.focus(); });
+    $("tyLoose").checked = opts.loose;
+    $("tyLoose").addEventListener("change", () => { opts.loose = $("tyLoose").checked; saveOpts(); paintFrom(0, typed.length); });
+    reset();
+    return {
+      focus: input,
+      leave() { if (startAt && !done) reset(); },
+      key(e) { if (e.key === "Escape") { reset(); input.focus(); } }
+    };
+  })();
+
+  /* ---------- 7) Tık hızı (CPS) ---------- */
+  tools.cps = (function () {
+    const pad = $("cpsPad");
+    let dur = Number(store.get("cps-sure", 5));
+    let best = store.get("cps-rekor", {});
+    let phase = "idle", startAt = 0, clicks = [], raf = 0, cooldownUntil = 0;
+    const RATINGS = [[4, "Sakin"], [6, "İyi"], [8, "Hızlı"], [10, "Çok hızlı"], [12, "Şimşek"], [Infinity, "Makine"]];
+
+    function showBest() { $("cpsBest").textContent = best[dur] ? f1.format(best[dur]) : "—"; }
+    function idle(text) {
+      phase = "idle";
+      pad.classList.remove("running");
+      $("cpsSay").textContent = text || "Başlamak için tıkla";
+      $("cpsBig").textContent = "0";
+      $("cpsSub").textContent = "İlk tık " + dur + " saniyelik süreyi başlatır";
+    }
+    function frame() {
+      const t = (performance.now() - startAt) / 1000;
+      if (t >= dur) return end();
+      $("cpsSub").textContent = f1.format(dur - t) + " sn kaldı";
+      raf = requestAnimationFrame(frame);
+    }
+    function end() {
+      phase = "done";
+      cancelAnimationFrame(raf);
+      pad.classList.remove("running");
+      const cps = clicks.length / dur;
+      const isRecord = !best[dur] || cps > best[dur];
+      if (isRecord) { best[dur] = Math.round(cps * 10) / 10; store.set("cps-rekor", best); }
+      $("cpsSay").textContent = RATINGS.find(([lim]) => cps < lim)[1] + (isRecord ? " · Yeni rekor" : "");
+      $("cpsBig").textContent = f1.format(cps) + " CPS";
+      $("cpsSub").textContent = "Tekrar denemek için tıkla";
+      $("cpsLast").textContent = f1.format(cps);
+      $("cpsClicks").textContent = f0.format(clicks.length);
+      showBest();
+      cooldownUntil = performance.now() + 700;
+      // Saniye saniye dağılım
+      const bins = new Array(Math.max(1, Math.ceil(dur))).fill(0);
+      clicks.forEach((t) => { bins[Math.min(bins.length - 1, Math.floor(t / 1000))]++; });
+      const max = Math.max(...bins, 1);
+      $("cpsChart").hidden = dur < 5;
+      $("cpsBars").innerHTML = bins.map((n, i) => '<span style="height:' + Math.max(3, (n / max) * 100) + '%" title="' + (i + 1) + ". saniye: " + n + ' tık"></span>').join("");
+      $("cpsAxisEnd").textContent = dur + ". sn";
+    }
+    function ripple(e) {
+      if (reduceMotion) return;
+      const r = pad.getBoundingClientRect();
+      const d = document.createElement("span");
+      d.className = "ripple";
+      d.style.left = (e.clientX - r.left) + "px";
+      d.style.top = (e.clientY - r.top) + "px";
+      pad.appendChild(d);
+      setTimeout(() => d.remove(), 460);
+    }
+    pad.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (phase === "done") { if (now < cooldownUntil) return; idle(); }
+      if (phase === "idle") {
+        phase = "running"; startAt = now; clicks = [];
+        pad.classList.add("running");
+        $("cpsSay").textContent = "Tıkla tıkla tıkla";
+        raf = requestAnimationFrame(frame);
+      }
+      clicks.push(now - startAt);
+      $("cpsBig").textContent = clicks.length;
+      ripple(e);
+    });
+    pad.addEventListener("contextmenu", (e) => e.preventDefault());
+    segmented($("cpsDur"), dur, (v) => { dur = Number(v); store.set("cps-sure", dur); cancelAnimationFrame(raf); idle(); showBest(); });
+    idle(); showBest();
+    return { leave() { if (phase === "running") { cancelAnimationFrame(raf); idle("Test yarıda kaldı, yeniden başla"); } } };
+  })();
+
+  /* ---------- 8) Tepki süresi ---------- */
+  tools.tepki = (function () {
+    const pad = $("rxPad");
+    const ROUNDS = 5;
+    let phase = "idle", timer = 0, goAt = 0, times = [];
+    let best = store.get("tepki-rekor", 0);
+    const RATINGS = [[200, "Olağanüstü"], [250, "Çok iyi"], [300, "İyi"], [400, "Ortalama"], [Infinity, "Biraz yavaş"]];
+    const ms = (v) => f0.format(v) + " ms";
+
+    function set(cls, say, big, sub) {
+      pad.classList.remove("wait", "go");
+      if (cls) pad.classList.add(cls);
+      $("rxSay").textContent = say;
+      $("rxBig").hidden = !big; $("rxBig").textContent = big || "";
+      $("rxSub").textContent = sub;
+    }
+    function summary() {
+      $("rxRounds").innerHTML = times.map((t, i) => '<span class="badge">' + (i + 1) + ". " + ms(t) + "</span>").join("");
+      if (!times.length) { $("rxAvg").textContent = "—"; $("rxMin").textContent = "—"; }
+      else {
+        $("rxAvg").textContent = ms(times.reduce((a, b) => a + b, 0) / times.length);
+        $("rxMin").textContent = ms(Math.min(...times));
+      }
+      $("rxBest").textContent = best ? ms(best) : "—";
+    }
+    function arm() {
+      phase = "wait";
+      set("wait", "Bekle…", "", "Yeşil olunca bas");
+      timer = setTimeout(() => {
+        phase = "go";
+        goAt = performance.now();
+        set("go", "Şimdi bas!", "", "");
+        // Saat, yeşil ekrana çizildiği andan itibaren sayılır
+        requestAnimationFrame(() => { goAt = performance.now(); });
+      }, 1200 + Math.random() * 2800);
+    }
+    function act() {
+      if (phase === "wait") {
+        clearTimeout(timer);
+        phase = "early";
+        set("", "Çok erken!", "", "Bu deneme sayılmadı. Tekrar denemek için tıkla");
+      } else if (phase === "go") {
+        const t = performance.now() - goAt;
+        times.push(t);
+        if (times.length >= ROUNDS) {
+          const avg = times.reduce((a, b) => a + b, 0) / times.length;
+          const rec = !best || avg < best;
+          if (rec) { best = Math.round(avg); store.set("tepki-rekor", best); }
+          summary();
+          phase = "end";
+          set("", RATINGS.find(([lim]) => avg < lim)[1] + (rec ? " · Yeni rekor" : ""), ms(avg), "Ortalaman. Yeni seri için tıkla");
+        } else {
+          summary();
+          phase = "result";
+          set("", times.length + ". deneme", ms(t), "Devam etmek için tıkla");
+        }
+      } else {
+        if (phase === "end" || phase === "idle") { times = []; summary(); }
+        arm();
+      }
+    }
+    pad.addEventListener("pointerdown", (e) => { if (e.button === 0) { e.preventDefault(); act(); } });
+    summary();
+    return {
+      focus: pad,
+      leave() { clearTimeout(timer); if (phase === "wait" || phase === "go") { phase = "idle"; times = []; summary(); set("", "Başlamak için tıkla", "", "Kırmızıyken bekle, yeşil olunca bas"); } },
+      key(e) { if ((e.code === "Space" || e.code === "Enter") && !e.repeat) { e.preventDefault(); act(); } }
+    };
+  })();
+
+  /* ---------- 9) Hedef testi ---------- */
+  tools.hedef = (function () {
+    const arena = $("aimArena"), center = $("aimCenter");
+    const COUNT = 20;
+    let size = Number(store.get("hedef-boy", 44));
+    let best = store.get("hedef-rekor", {});
+    let running = false, hits = 0, misses = 0, startAt = 0, shownAt = 0, times = [], target = null;
+
+    function showBest() { $("aimBest").textContent = best[size] ? f0.format(best[size]) + " ms" : "—"; }
+    function place() {
+      if (target) target.remove();
+      const w = arena.clientWidth, h = arena.clientHeight, m = 10;
+      target = document.createElement("button");
+      target.type = "button";
+      target.className = "target";
+      target.setAttribute("aria-label", "Hedef");
+      target.style.width = target.style.height = size + "px";
+      target.style.left = (m + Math.random() * Math.max(1, w - size - m * 2)) + "px";
+      target.style.top = (28 + Math.random() * Math.max(1, h - size - 28 - m)) + "px";
+      target.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        hit();
+      });
+      arena.appendChild(target);
+      shownAt = performance.now();
+    }
+    function hit() {
+      times.push(performance.now() - shownAt);
+      hits++;
+      $("aimProg").textContent = hits + " / " + COUNT;
+      if (hits >= COUNT) end(); else place();
+    }
+    function start() {
+      running = true; hits = 0; misses = 0; times = [];
+      center.hidden = true;
+      $("aimProg").textContent = "0 / " + COUNT;
+      startAt = performance.now();
+      place();
+    }
+    function end() {
+      running = false;
+      if (target) { target.remove(); target = null; }
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+      const acc = (hits / (hits + misses)) * 100;
+      const totalSec = (performance.now() - startAt) / 1000;
+      const rec = !best[size] || avg < best[size];
+      if (rec) { best[size] = Math.round(avg); store.set("hedef-rekor", best); }
+      $("aimAvg").textContent = f0.format(avg) + " ms";
+      $("aimAcc").textContent = "%" + f0.format(acc);
+      showBest();
+      $("aimProg").textContent = "";
+      $("aimNote").textContent = (rec ? "Yeni rekor! " : "") + COUNT + " hedef " + f1.format(totalSec) + " saniyede, " + misses + " ıska.";
+      $("aimStart").textContent = "Tekrar";
+      center.hidden = false;
+      $("aimStart").focus({ preventScroll: true });
+    }
+    function abort() {
+      if (!running) return;
+      running = false;
+      if (target) { target.remove(); target = null; }
+      $("aimProg").textContent = "";
+      $("aimNote").textContent = "Test yarıda kaldı.";
+      center.hidden = false;
+    }
+    arena.addEventListener("pointerdown", (e) => {
+      if (!running || e.button !== 0) return;
+      misses++;
+      const r = arena.getBoundingClientRect();
+      const x = document.createElement("span");
+      x.className = "miss";
+      x.style.left = (e.clientX - r.left) + "px";
+      x.style.top = (e.clientY - r.top) + "px";
+      arena.appendChild(x);
+      setTimeout(() => x.remove(), 620);
+    });
+    $("aimStart").addEventListener("click", start);
+    segmented($("aimSize"), size, (v) => { size = Number(v); store.set("hedef-boy", size); abort(); showBest(); });
+    showBest();
+    return { focus: $("aimStart"), leave: abort, key(e) { if (e.code === "Escape") abort(); } };
+  })();
+
+  /* ---------- Araç seçimi ---------- */
+  const sections = {};
+  document.querySelectorAll(".tool").forEach((s) => { sections[s.dataset.tool] = s; });
+  const chips = [...document.querySelectorAll(".chip")];
+  let current = null;
+
+  function select(id, focusTool) {
+    if (!sections[id]) id = "sayac";
+    if (id === current) return;
+    if (current && tools[current].leave) tools[current].leave();
+    Object.entries(sections).forEach(([k, s]) => { s.hidden = k !== id; });
+    chips.forEach((c) => { if (c.dataset.go === id) c.setAttribute("aria-current", "page"); else c.removeAttribute("aria-current"); });
+    current = id;
+    store.set("son-arac", id);
+    if (tools[id].enter) tools[id].enter();
+    if (focusTool && tools[id].focus) tools[id].focus.focus({ preventScroll: true });
+  }
+  chips.forEach((c) => c.addEventListener("click", () => {
+    select(c.dataset.go, true);
+    try { history.replaceState(null, "", "#" + c.dataset.go); } catch (e) {}
+  }));
+  window.addEventListener("hashchange", () => select(location.hash.slice(1), false));
+
+  // Klavye: form alanlarında yazarken ve düğmeye Boşluk/Enter basılırken araçlara iletilmez
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+    const onButton = t.tagName === "BUTTON" || t.tagName === "A";
+    if (onButton && (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter")) {
+      // Sayacın kendi düğmesine odaklıyken çift sayımı önle; düğmenin yerel tıklaması çalışır
+      if (current === "sayac" && t.id === "tPress") return;
+      if (t.classList.contains("chip") || t.closest(".row, .seg, .counters, .arena, form")) return;
+    }
+    if (tools[current].key) tools[current].key(e);
+  });
+  document.addEventListener("keyup", (e) => { if (tools[current].keyup) tools[current].keyup(e); });
+
+  const start = location.hash.slice(1);
+  select(sections[start] ? start : store.get("son-arac", "sayac"), false);
+})();
+</script>
+</body>
+</html>

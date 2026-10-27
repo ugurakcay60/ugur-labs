@@ -16,8 +16,8 @@ export const projects: Project[] = [
   {
     title: "Diyet-AI",
     description: {
-      tr: "Yapay zekâ destekli diyet ve alışkanlık takip uygulaması.",
-      en: "AI-powered diet and habit tracking application.",
+      tr: "Kalori saymak yok: diyet planındaki her öğünü, sporu ve tartıyı bir fotoğrafla onaylarsın; onaylamadan sıradaki adım açılmaz. Disipline odaklı, yapay zekâya hazır diyet asistanı.",
+      en: "No calorie counting: you confirm every meal, workout and weigh-in in your plan with a photo, and the next step stays locked until you do. A discipline-first diet assistant, built for AI.",
     },
     link: "https://diyet-ai.ugur-labs.com",
     tags: ["Next.js", "Supabase", "AI"],

@@ -9,11 +9,15 @@ type Part = { icon: IconName; role: string; name: string; text: string; bullets:
 
 export type CaseStudy = {
   title: string;
+  // Teknik detaydan önce ürünün vaadi (büyük puntoyla)
+  tagline: string;
   intro: string;
   diagramHint: string;
   flowTitle: string;
   flow: string[];
   partsTitle: string;
+  partsHint: string;
+  // Diyagramdaki kutular ve sekmeler parçaları `icon` ile eşler (her parçanın ikonu farklı)
   parts: Part[];
   outro: string;
 };
@@ -21,6 +25,7 @@ export type CaseStudy = {
 const diyetAi: Record<Lang, CaseStudy> = {
   tr: {
     title: "Diyet-AI mimarisi",
+    tagline: "Kalori saymakla uğraşma. Planındaki her öğünü bir fotoğrafla onayla; gün, sen ilerledikçe açılsın.",
     intro:
       "Diyet-AI, öğün, egzersiz ve tartı fotoğraflarıyla doğrulanan kişisel bir diyet takip uygulaması. Ayrı bir uygulama sunucusu yok: arayüz Vercel'den gelir, tarayıcı veriler için doğrudan Supabase ile konuşur, güvenliği veritabanı kuralları sağlar. Tamamı ücretsiz katmanlarda çalışıyor.",
     diagramHint: "Diyagramı yana kaydırabilirsin",
@@ -34,6 +39,7 @@ const diyetAi: Record<Lang, CaseStudy> = {
       "Kod GitHub'da tutulur; main dalına her push Vercel'de otomatik olarak yeni sürümü yayına alır.",
     ],
     partsTitle: "Hangi iş için ne kullanıldı",
+    partsHint: "Diyagramdaki bir kutuya ya da aşağıdaki başlıklardan birine dokun.",
     parts: [
       {
         icon: "globe",
@@ -114,6 +120,7 @@ const diyetAi: Record<Lang, CaseStudy> = {
   },
   en: {
     title: "Diyet-AI architecture",
+    tagline: "Stop counting calories. Confirm every meal in your plan with a photo, and the day unlocks as you go.",
     intro:
       "Diyet-AI is a personal diet tracker where meals, workouts and weigh-ins are confirmed with photos. There is no separate app server: Vercel serves the UI, the browser talks to Supabase directly for data, and database rules enforce security. Everything runs on free tiers.",
     diagramHint: "Scroll the diagram sideways",
@@ -127,6 +134,7 @@ const diyetAi: Record<Lang, CaseStudy> = {
       "The code lives on GitHub; every push to main ships a new version on Vercel automatically.",
     ],
     partsTitle: "What each piece is for",
+    partsHint: "Tap a box in the diagram or one of the tabs below.",
     parts: [
       {
         icon: "globe",

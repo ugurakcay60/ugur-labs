@@ -5,21 +5,23 @@ export type Lang = "tr" | "en";
 // Türkçe kaynak metin; `en` aynı şekle uymak zorunda (eksik çeviri derleme hatası verir)
 const tr = {
   meta: {
-    title: "Ugur Labs — Yapay Zekâ Destekli Web & Mobil Geliştirme",
-    description: "Yapay zekâ destekli web ve mobil uygulama geliştirme, yazılım mimarisi ve kişisel gelişim.",
+    title: "Ugur Labs — Düşük Maliyetli, Yapay Zekâ Destekli Web & Mobil Ürünler",
+    description:
+      "Fikrinizi bakımı kolay, ölçeklenebilir ve işletme maliyeti düşük, yapay zekâ destekli bir web veya mobil ürüne dönüştürüyoruz.",
   },
   nav: { projects: "Projeler", links: "Linkler" },
   theme: "Açık / koyu tema",
   hero: {
-    eyebrow: "Bağımsız yazılım laboratuvarı",
-    title: ["Fikirleri yapay zekâ ile", "çalışan ürünlere", "dönüştürüyorum."],
-    subtitle: "Yapay zekâ destekli web ve mobil uygulama geliştirme, yazılım mimarisi ve kişisel gelişim.",
+    eyebrow: "Yazılım laboratuvarı · Fikirden yayına",
+    title: ["Düşük maliyetle çalışan,", "yapay zekâ destekli", "ölçeklenebilir ürünler."],
+    subtitle:
+      "Fikrinizi; bakımı kolay, büyüdükçe ölçeklenen ve işletme maliyeti düşük bir web ya da mobil ürüne dönüştürüyoruz. Tasarım, mimari ve yayın tek elden.",
     cta: "Projeleri incele",
   },
   focus: [
-    { title: "Web & Mobil Uygulamalar", text: "Yapay zekâyı sürecin içine alan, hızlı ve modern ürünler." },
-    { title: "Yazılım Mimarisi", text: "Büyümeye hazır, sade ve sürdürülebilir sistemler." },
-    { title: "Kişisel Gelişim", text: "Daha iyi alışkanlıklar için araçlar ve notlar." },
+    { title: "Fikirden çalışan ürüne", text: "Yapay zekâyı sürecin içine alarak fikri hızla, gerçek kullanıcıların deneyebileceği bir ürüne dönüştürmek." },
+    { title: "Düşük işletme maliyeti", text: "Sunucusuz altyapı ve ücretsiz katmanlarla başlayan, büyüdükçe ölçeklenen mimari." },
+    { title: "Güvenli ve sürdürülebilir", text: "Kullanıcı bazlı veri güvenliği, otomatik güvenlik taramaları ve devralınabilir, sade kod." },
   ],
   projects: {
     title: "Projeler",
@@ -33,21 +35,23 @@ const tr = {
 
 const en: typeof tr = {
   meta: {
-    title: "Ugur Labs — AI-Powered Web & Mobile Development",
-    description: "AI-powered web & mobile app development, software architecture, and personal growth.",
+    title: "Ugur Labs — Low-Cost, AI-Powered Web & Mobile Products",
+    description:
+      "We turn your idea into an AI-powered web or mobile product that is easy to maintain, scales as you grow and is cheap to run.",
   },
   nav: { projects: "Projects", links: "Links" },
   theme: "Light / dark theme",
   hero: {
-    eyebrow: "Independent software lab",
-    title: ["Turning ideas into", "working products", "with AI."],
-    subtitle: "AI-powered web & mobile app development, software architecture, and personal growth.",
+    eyebrow: "Software lab · Idea to launch",
+    title: ["Low-cost,", "AI-powered", "products that scale."],
+    subtitle:
+      "We turn your idea into a web or mobile product that is easy to maintain, scales as you grow and stays cheap to run. Design, architecture and launch in one place.",
     cta: "See projects",
   },
   focus: [
-    { title: "Web & Mobile Apps", text: "Fast, modern products built with AI in the loop." },
-    { title: "Software Architecture", text: "Clean, scalable systems that are easy to grow." },
-    { title: "Personal Growth", text: "Tools and notes for building better habits." },
+    { title: "From idea to working product", text: "With AI in the loop, an idea quickly becomes something real users can try." },
+    { title: "Low running costs", text: "Serverless infrastructure that starts on free tiers and scales as you grow." },
+    { title: "Secure and maintainable", text: "Per-user data security, automated security scans and clean code anyone can take over." },
   ],
   projects: {
     title: "Projects",

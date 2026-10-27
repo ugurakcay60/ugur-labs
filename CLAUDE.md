@@ -10,6 +10,7 @@ Ugur Labs landing page (ugur-labs.com). Next.js 16 App Router + Tailwind v4 + lu
 - **`public/tik-sayaci/index.html` is generated** from `../Tik Sayaci/index.html` by `node ../"Tik Sayaci"/siteye-aktar.mjs`; don't edit it here. Served as a plain static page at `/tik-sayaci/`.
 - **Case study** (small "Vaka çalışması · Mimari" link under a project row that opens a native `<dialog>`): set `caseStudy: "<id>"` on the project, add its TR/EN texts to `src/data/case-studies.ts` and an SVG diagram component to `src/components/case-study/` (register it in `diagrams` in `CaseStudyDialog.tsx`). Diagrams use theme classes (`fill-surface`, `stroke-line`, `stroke-muted`…) so they follow light/dark; boxes are clickable and share the selected part with the tabs and the 3 "layers" cards (`layers` in the data). In TR text, write English words that get CSS `uppercase` in capitals (`DOMAIN`), otherwise Turkish casing renders "DOMAİN".
 - **Useful links** (bottom section): edit `src/data/links.ts`.
+- **Feedback** (`src/components/Feedback.tsx`, section `#feedback`): posts to Web3Forms (`src/lib/feedback.ts`; public `WEB3FORMS_ACCESS_KEY`, messages are emailed to the owner) with hCaptcha (Web3Forms' shared free-plan sitekey, verified by Web3Forms) + a `botcheck` honeypot. The form opens inline, not in a modal `<dialog>`: the hCaptcha challenge is appended to `<body>` and would sit behind the dialog's top layer. hCaptcha shows a "localhost detected" warning in dev; that's expected.
 - Commands: `npm run dev`, `npm run build` (output in `out/`), `npm run lint`.
 
 @AGENTS.md

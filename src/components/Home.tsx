@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUpRight } from "lucide-react";
+import Feedback from "@/components/Feedback";
 import Header from "@/components/Header";
 import HtmlLang from "@/components/HtmlLang";
 import ProjectRow from "@/components/ProjectRow";
@@ -105,6 +106,13 @@ export default function Home({ lang }: { lang: Lang }) {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Geri bildirim: Web3Forms + hCaptcha (src/lib/feedback.ts) */}
+        <section id="feedback" className="scroll-mt-20 border-t border-line">
+          <div className={`${container} py-16`}>
+            <Feedback lang={lang} />
           </div>
         </section>
       </main>

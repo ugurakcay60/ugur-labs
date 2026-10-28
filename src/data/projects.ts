@@ -36,6 +36,17 @@ export const projects: Project[] = [
     status: "live",
   },
   {
+    title: "Oyun Evi",
+    description: {
+      tr: "Okul öncesi ve 4. sınıf için eğitici ve zekâ oyunları: sesli yönergeli renk, harf ve sayı oyunları; çarpım, kesirler, yazım, İngilizce; sudoku, labirent, şifre kırıcı. Yıldızlar, çıkartma albümü ve kendiliğinden ayarlanan seviyeler.",
+      en: "Educational and brain games for preschool and 4th grade: voice-guided colors, letters and numbers; multiplication, fractions, spelling, English; sudoku, mazes, code breaker. Stars, a sticker album and self-adjusting levels (in Turkish).",
+    },
+    // Dosyalar Çocuk Oyunları/siteye-aktar.mjs ile public/cocuk-oyunlari/ içine üretilir
+    link: "https://ugur-labs.com/cocuk-oyunlari/",
+    tags: ["HTML", "CSS", "JavaScript"],
+    status: "live",
+  },
+  {
     title: "Finans Paneli",
     description: {
       tr: "Gelir ve giderleri kaydedip bakiyeyi ve kategorilere göre harcamaları grafikle gösteren kişisel finans paneli. Veriler tarayıcıda kalır.",

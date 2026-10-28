@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // ../Çocuk Oyunları/siteye-aktar.mjs ile üretilen oyun dosyaları
+    "public/cocuk-oyunlari/**",
   ]),
 ]);
 

@@ -56,11 +56,11 @@ const diyetAi: Record<Lang, CaseStudy> = {
     diagramHint: "Diyagramı yana kaydırabilirsin",
     flowTitle: "Bir isteğin yolculuğu",
     flow: [
-      "Kullanıcı diyet-ai.ugur-labs.com yazar; Türkticaret DNS'indeki CNAME kaydı adresi Vercel'e yönlendirir.",
+      "Kullanıcı diyet-ai.ugur-labs.com yazar; alan adının DNS'indeki CNAME kaydı adresi Vercel'e yönlendirir.",
       "Vercel, Next.js ile derlenmiş arayüzü en yakın CDN noktasından HTTPS ile gönderir. Sayfalar tamamen tarayıcıda çalışır.",
       "Giriş, öğün kayıtları ve fotoğraflar tarayıcıdan doğrudan Supabase'e gider. Her tabloda satır düzeyinde güvenlik (RLS) açık; herkes yalnızca kendi verisini görür.",
       "Kayıt onayı ve şifre sıfırlama e-postalarını Supabase Auth, Resend SMTP üzerinden no-reply@ugur-labs.com adresiyle gönderir.",
-      "Gizli anahtar gereken az sayıdaki iş Vercel'deki sunucusuz fonksiyonlarda yapılır. Örneğin Supabase'in zamanlanmış görevi her saat onaylanmamış hesapları temizletir.",
+      "Gizli anahtar gereken az sayıdaki iş Vercel'deki sunucusuz fonksiyonlarda yapılır; zamanlanmış bakım görevleri ve hatırlatma bildirimleri gibi.",
       "Kod GitHub'da tutulur; main dalına her push Vercel'de otomatik olarak yeni sürümü yayına alır.",
     ],
     partsTitle: "Hangi iş için ne kullanıldı",
@@ -70,13 +70,9 @@ const diyetAi: Record<Lang, CaseStudy> = {
         icon: "globe",
         // İngilizce kelimeler büyük yazılır; TR'de CSS uppercase "i"yi "İ" yapar
         role: "DOMAIN & DNS",
-        name: "Türkticaret.net",
-        text: "ugur-labs.com alan adı burada kayıtlı. DNS kayıtları alt alan adlarını servislere bağlar ve e-postanın güvenilir sayılmasını sağlar.",
-        bullets: [
-          "CNAME diyet-ai → Vercel",
-          "DKIM, SPF ve DMARC kayıtları → Resend",
-          "Ana alan adının posta (MX) kayıtları Türkticaret'te kalır",
-        ],
+        name: "ugur-labs.com",
+        text: "Alan adının DNS kayıtları alt alan adlarını servislere bağlar ve e-postanın güvenilir sayılmasını sağlar.",
+        bullets: ["CNAME diyet-ai → Vercel", "DKIM, SPF ve DMARC kayıtları → Resend"],
       },
       {
         icon: "cloud",
@@ -86,7 +82,6 @@ const diyetAi: Record<Lang, CaseStudy> = {
         bullets: [
           "Her push'ta otomatik deploy, dallar için önizleme adresleri",
           "Ortam değişkenleri (gizli anahtarlar) yalnızca sunucuda",
-          "Hobby planı: ücretsiz",
         ],
       },
       {
@@ -97,8 +92,8 @@ const diyetAi: Record<Lang, CaseStudy> = {
         bullets: [
           "Postgres + satır düzeyinde güvenlik (RLS)",
           "Auth: e-posta onayı, şifre sıfırlama",
-          "Storage: özel fotoğraf kovası, yalnızca JPEG ve en fazla 1 MB",
-          "pg_cron: saatlik temizlik görevi",
+          "Storage: özel fotoğraf kovası, dosya türü ve boyutu sunucuda sınırlı",
+          "pg_cron: zamanlanmış bakım görevleri",
         ],
       },
       {
@@ -106,11 +101,7 @@ const diyetAi: Record<Lang, CaseStudy> = {
         role: "E-posta",
         name: "Resend",
         text: "Supabase'in kendi e-posta servisi yalnızca ekip üyelerine gönderebiliyor. Bu yüzden özel SMTP olarak Resend bağlandı ve e-postalar kendi alan adımızdan gidiyor.",
-        bullets: [
-          "Gönderen: DiyetAI <no-reply@ugur-labs.com>",
-          "Ücretsiz plan: ayda 3.000, günde 100 e-posta",
-          "DKIM/SPF ile spam klasörüne düşmeme",
-        ],
+        bullets: ["Gönderen: DiyetAI <no-reply@ugur-labs.com>", "DKIM/SPF ile spam klasörüne düşmeme"],
       },
       {
         icon: "monitor",
@@ -173,11 +164,11 @@ const diyetAi: Record<Lang, CaseStudy> = {
     diagramHint: "Scroll the diagram sideways",
     flowTitle: "How a request travels",
     flow: [
-      "The user opens diyet-ai.ugur-labs.com; a CNAME record in the Türkticaret DNS points the address at Vercel.",
+      "The user opens diyet-ai.ugur-labs.com; a CNAME record in the domain's DNS points the address at Vercel.",
       "Vercel serves the Next.js build over HTTPS from the nearest CDN location. Pages run entirely in the browser.",
       "Sign-in, meal logs and photos go from the browser straight to Supabase. Row-level security (RLS) is on for every table, so each user only sees their own data.",
       "Supabase Auth sends confirmation and password-reset emails through Resend SMTP, from no-reply@ugur-labs.com.",
-      "The few jobs that need a secret key run as serverless functions on Vercel. For example, a Supabase scheduled job calls one every hour to delete unconfirmed accounts.",
+      "The few jobs that need a secret key run as serverless functions on Vercel, such as scheduled maintenance tasks and reminder notifications.",
       "The code lives on GitHub; every push to main ships a new version on Vercel automatically.",
     ],
     partsTitle: "What each piece is for",
@@ -186,24 +177,16 @@ const diyetAi: Record<Lang, CaseStudy> = {
       {
         icon: "globe",
         role: "Domain & DNS",
-        name: "Türkticaret.net",
-        text: "The ugur-labs.com domain is registered here. DNS records connect subdomains to services and make the email trustworthy.",
-        bullets: [
-          "CNAME diyet-ai → Vercel",
-          "DKIM, SPF and DMARC records → Resend",
-          "The root domain's mail (MX) stays with Türkticaret",
-        ],
+        name: "ugur-labs.com",
+        text: "The domain's DNS records connect subdomains to services and make the email trustworthy.",
+        bullets: ["CNAME diyet-ai → Vercel", "DKIM, SPF and DMARC records → Resend"],
       },
       {
         icon: "cloud",
         role: "Hosting & serverless functions",
         name: "Vercel",
         text: "Builds the Next.js app, serves it from a global CDN and renews the SSL certificate automatically. The few API endpoints that need a secret key also run here as functions.",
-        bullets: [
-          "Auto-deploy on every push, preview URLs for branches",
-          "Environment variables (secrets) stay on the server",
-          "Hobby plan: free",
-        ],
+        bullets: ["Auto-deploy on every push, preview URLs for branches", "Environment variables (secrets) stay on the server"],
       },
       {
         icon: "database",
@@ -213,8 +196,8 @@ const diyetAi: Record<Lang, CaseStudy> = {
         bullets: [
           "Postgres + row-level security (RLS)",
           "Auth: email confirmation, password reset",
-          "Storage: private photo bucket, JPEG only, 1 MB max",
-          "pg_cron: hourly cleanup job",
+          "Storage: private photo bucket, file type and size limited on the server",
+          "pg_cron: scheduled maintenance jobs",
         ],
       },
       {
@@ -222,11 +205,7 @@ const diyetAi: Record<Lang, CaseStudy> = {
         role: "Email",
         name: "Resend",
         text: "Supabase's built-in mailer only reaches team members, so Resend is connected as custom SMTP and email goes out from our own domain.",
-        bullets: [
-          "Sender: DiyetAI <no-reply@ugur-labs.com>",
-          "Free plan: 3,000 emails a month, 100 a day",
-          "DKIM/SPF keep it out of spam folders",
-        ],
+        bullets: ["Sender: DiyetAI <no-reply@ugur-labs.com>", "DKIM/SPF keep it out of spam folders"],
       },
       {
         icon: "monitor",

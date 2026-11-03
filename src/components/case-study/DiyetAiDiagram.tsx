@@ -9,7 +9,7 @@ import type { IconName } from "@/data/case-studies";
 const labels = {
   tr: {
     user: ["Kullanıcı", "Tarayıcı / telefon", "Kamera · sıkıştırma", "Hatırlatıcı · siren"],
-    dns: ["DOMAIN & DNS", "Türkticaret.net", "ugur-labs.com · CNAME · DKIM/SPF"],
+    dns: ["DOMAIN & DNS", "ugur-labs.com", "DNS · CNAME · DKIM/SPF"],
     ai: ["YAPAY ZEKÂ · HAZIRLIK", "Vision LLM", "fotoğraf doğrulama · kan yorumu"],
     vercel: ["HOSTING", "Vercel"],
     app: ["Next.js 16 · React 19", "CDN · HTTPS · arayüz"],
@@ -17,7 +17,7 @@ const labels = {
     supabase: ["SUNUCU / BACKEND", "Supabase · Frankfurt"],
     db: ["Postgres", "RLS korumalı"],
     storage: ["Storage", "özel foto kovası"],
-    cron: ["pg_cron", "saatlik temizlik"],
+    cron: ["pg_cron", "zamanlı bakım"],
     auth: ["Auth", "giriş · onay"],
     github: ["KOD & CI", "GitHub", "Actions · Semgrep · Dependabot"],
     resend: ["E-POSTA", "Resend", "no-reply@ugur-labs.com · SMTP"],
@@ -33,7 +33,7 @@ const labels = {
   },
   en: {
     user: ["User", "Browser / phone", "Camera · compression", "Reminders · siren"],
-    dns: ["DOMAIN & DNS", "Türkticaret.net", "ugur-labs.com · CNAME · DKIM/SPF"],
+    dns: ["DOMAIN & DNS", "ugur-labs.com", "DNS · CNAME · DKIM/SPF"],
     ai: ["AI · PREPARED", "Vision LLM", "photo check · blood test notes"],
     vercel: ["HOSTING", "Vercel"],
     app: ["Next.js 16 · React 19", "CDN · HTTPS · UI"],
@@ -41,7 +41,7 @@ const labels = {
     supabase: ["SERVER / BACKEND", "Supabase · Frankfurt"],
     db: ["Postgres", "RLS-protected"],
     storage: ["Storage", "private photo bucket"],
-    cron: ["pg_cron", "hourly cleanup"],
+    cron: ["pg_cron", "scheduled jobs"],
     auth: ["Auth", "sign-in · confirm"],
     github: ["CODE & CI", "GitHub", "Actions · Semgrep · Dependabot"],
     resend: ["EMAIL", "Resend", "no-reply@ugur-labs.com · SMTP"],

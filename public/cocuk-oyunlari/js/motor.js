@@ -158,21 +158,32 @@
     sesleriAl();
     speechSynthesis.onvoiceschanged = sesleriAl;
   }
-  function sesBul(dil) {
+  const ERKEK_SES = /ahmet|tolga|mehmet|erkek|\bmale\b/i;
+  const KADIN_SES = /emel|filiz|seda|yelda|zeynep|female|kad[ıi]n/i;
+  function sesBul(dil, kadin = false) {
     const kok = dil.slice(0, 2).toLowerCase();
     const uygun = sesListesi.filter((v) => (v.lang || "").toLowerCase().replace("_", "-").startsWith(kok));
     // Doğal (Natural/Online/Google) sesler çocuklar için daha anlaşılır
-    return uygun.find((v) => /natural|online|google/i.test(v.name)) || uygun[0] || null;
+    const dogal = (v) => /natural|online|google/i.test(v.name);
+    if (kadin) {
+      // Kız sesi: kadın adlı sesler, yoksa erkek adlı olmayanlar, yoksa herhangi biri
+      const kd = uygun.filter((v) => !ERKEK_SES.test(v.name));
+      const adli = kd.filter((v) => KADIN_SES.test(v.name));
+      const havuz = adli.length ? adli : kd.length ? kd : uygun;
+      return havuz.find(dogal) || havuz[0] || null;
+    }
+    return uygun.find(dogal) || uygun[0] || null;
   }
   const turkceSesDurumu = () => (!konusmaVar ? "yok" : !sesListesi.length ? "bilinmiyor" : sesBul("tr-TR") ? "var" : "yok");
   let sonSoz = null;
   let konusZaman = null;
   // kaydet: 🔊 düğmesi bunu tekrar okusun mu; sessiz: yalnızca kaydet, okuma
-  function konus(metin, dil = "tr-TR", { kaydet: kayit = true, sessiz = false } = {}) {
+  // kadin: kız sesi tercih et; perde / hiz: karakter sesi için (varsayılan 1.05 / dile göre)
+  function konus(metin, dil = "tr-TR", { kaydet: kayit = true, sessiz = false, kadin = false, perde, hiz } = {}) {
     if (!metin) return;
-    if (kayit) sonSoz = { metin, dil };
+    if (kayit) sonSoz = { metin, dil, kadin, perde, hiz };
     if (sessiz || !veri.ayarlar.konusma || !konusmaVar) return;
-    const v = sesBul(dil);
+    const v = sesBul(dil, kadin);
     if (!v && sesListesi.length) return; // bu dilde ses yoksa yanlış aksanla okumayalım
     speechSynthesis.cancel();
     clearTimeout(konusZaman);
@@ -180,8 +191,8 @@
       const u = new SpeechSynthesisUtterance(metin);
       u.lang = dil;
       if (v) u.voice = v;
-      u.rate = dil.startsWith("tr") ? 0.95 : 0.85;
-      u.pitch = 1.05;
+      u.rate = hiz || (dil.startsWith("tr") ? 0.95 : 0.85);
+      u.pitch = perde || 1.05;
       speechSynthesis.speak(u);
     }, 50);
   }
@@ -368,7 +379,7 @@
         seviye,
         h(
           "button.ses-dugme",
-          { type: "button", "aria-label": "Yönergeyi tekrar dinle", title: "Tekrar dinle", onclick: () => sonSoz && konus(sonSoz.metin, sonSoz.dil) },
+          { type: "button", "aria-label": "Yönergeyi tekrar dinle", title: "Tekrar dinle", onclick: () => sonSoz && konus(sonSoz.metin, sonSoz.dil, sonSoz) },
           h("span.emo", "🔊")
         )
       ),
@@ -409,8 +420,11 @@
     k.enIyi = Math.max(k.enIyi, y);
     if (sonuc.skor != null) k.enIyiSkor = Math.max(k.enIyiSkor || 0, sonuc.skor);
     const eskiSeviye = k.seviye;
-    if (y === 3 && k.seviye < 5) k.seviye++;
-    else if (y === 1 && k.seviye > 1) k.seviye--;
+    // Serbest oyunlarda (puanli: false) seviye yoktur; yalnızca yıldız ve çıkartma işlenir
+    if (oyun.puanli !== false) {
+      if (y === 3 && k.seviye < 5) k.seviye++;
+      else if (y === 1 && k.seviye > 1) k.seviye--;
+    }
     const eskiYildiz = c.yildiz;
     c.yildiz += y;
     if (c.gun.t !== bugun()) c.gun = { t: bugun(), s: 0 };

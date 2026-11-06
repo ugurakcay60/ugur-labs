@@ -417,8 +417,9 @@ const calan = { muzik: false };   // müzik çalarken tık sesleri susar (ritmi 
 const ses = (function () {
   let ctx = null, acik = store.get("ses", "1") !== "0", son = 0, gurultu = null;
   function ac() {
+    if (ctx && ctx.state === "closed") ctx = null;
     if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; } }
-    if (ctx && ctx.state === "suspended") ctx.resume();
+    if (ctx && ctx.state !== "running") { try { const p = ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
     return ctx;
   }
   function nota(f, t0, sure, tip, vol, f2) {
@@ -454,14 +455,16 @@ const ses = (function () {
 /* ---------- Parti müziği (dosyasız, Web Audio ile üretilir) ---------- */
 // 126 BPM, La minör: La-Fa-Do-Sol dizisi. Seviye 1 = çekiliş sürerken (davul, bas, arp);
 // seviye 2 = kazanan çıkınca (alkış, melodi, akor vuruşları ekler).
+// Her baslat() kendi ses düğümü, zamanlayıcısı ve sayacıyla BAĞIMSIZ bir "oturum" açar; sönen eski oturum
+// yenisini etkilemez. Böylece 2., 3. çekiliş de birincisiyle birebir aynı yolu izler.
 const muzik = (function () {
   const ADIM = 60 / 126 / 4;                         // bir 16'lık notanın süresi (sn)
   const AKOR = [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62]];
   const BAS = [45, 41, 48, 43];
   const ARP = [0, 1, 2, 1, 2, 1, 0, 2];
   const LEAD = [[81, 0, 79, 81, 84, 0, 81, 79], [77, 0, 76, 77, 81, 0, 77, 76], [79, 0, 76, 79, 84, 0, 79, 76], [79, 0, 74, 79, 83, 0, 79, 74]];
-  let acik = store.get("muzik", "1") !== "0", c = null, ana = null, gurultu = null;
-  let zamanlayici = 0, durT = 0, bitirT = 0, sonraki = 0, adim = 0, seviye = 1, calisiyor = false;
+  let acik = store.get("muzik", "1") !== "0";
+  let c = null, cikis = null, gurultu = null, oturum = null;
   const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
   function osc(tip, f, t, sure, vol, filtre) {
@@ -469,28 +472,26 @@ const muzik = (function () {
     o.type = tip; o.frequency.setValueAtTime(f, t);
     if (filtre) { const fl = c.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = filtre; o.connect(fl); fl.connect(g); } else o.connect(g);
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
-    g.connect(ana); o.start(t); o.stop(t + sure + 0.03);
+    g.connect(cikis); o.start(t); o.stop(t + sure + 0.03);
   }
   function vur(t, sure, vol, tip, f) {                // gürültü darbesi: tok, alkış, zil
-    if (!gurultu) {
+    if (!gurultu || gurultu.context !== c) {
       const n = c.sampleRate | 0; gurultu = c.createBuffer(1, n, c.sampleRate);
       const d = gurultu.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
     }
     const s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
     s.buffer = gurultu; fl.type = tip; fl.frequency.value = f;
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
-    s.connect(fl); fl.connect(g); g.connect(ana); s.start(t, Math.random() * 0.5); s.stop(t + sure + 0.03);
+    s.connect(fl); fl.connect(g); g.connect(cikis); s.start(t, Math.random() * 0.4); s.stop(t + sure + 0.03);
   }
   function kick(t) {
     const o = c.createOscillator(), g = c.createGain();
     o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
     g.gain.setValueAtTime(1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
-    o.connect(g); g.connect(ana); o.start(t); o.stop(t + 0.3);
+    o.connect(g); g.connect(cikis); o.start(t); o.stop(t + 0.3);
   }
-  function crash(t) { vur(t, 1.6, 0.5, "highpass", 5000); }
-
-  function nota(i, t) {
-    const bar = Math.floor(i / 16) % 4, s = i % 16, ak = AKOR[bar], l2 = seviye > 1;
+  function nota(r, t) {
+    const i = r.adim, bar = Math.floor(i / 16) % 4, s = i % 16, ak = AKOR[bar], l2 = r.seviye > 1;
     if (s % 4 === 0) kick(t);
     if (s % 4 === 2) { vur(t, s === 14 ? 0.16 : 0.05, 0.22, "highpass", 7500); osc("sawtooth", hz(BAS[bar]), t, 0.2, 0.42, 420); }
     if (s % 2 === 1) vur(t, 0.025, 0.07, "highpass", 9000);
@@ -499,43 +500,62 @@ const muzik = (function () {
       if (s === 4 || s === 12) { vur(t, 0.04, 0.5, "bandpass", 1500); vur(t + 0.02, 0.1, 0.4, "bandpass", 1700); }
       if (s % 2 === 0) { const m = LEAD[bar][s / 2]; if (m) osc("sawtooth", hz(m), t, 0.2, 0.1, 3200); }
       if (s === 6 || s === 14) ak.forEach((m) => osc("sawtooth", hz(m + 12), t, 0.12, 0.05, 2500));
+      if (s === 0 && bar === 0 && i > 0) vur(t, 1.6, 0.5, "highpass", 5000);   // zil darbesi
     }
-    if (s === 0 && bar === 0 && l2 && adim > 0) crash(t);
   }
-  function dongu() { while (sonraki < c.currentTime + 0.15) { nota(adim, sonraki); sonraki += ADIM; adim++; } }
-
+  function dongu(r) {
+    if (r.bitti) return;
+    if (c.state !== "running") { try { c.resume(); } catch (e) {} }          // tarayıcı sesi askıya aldıysa uyandır
+    cikis = r.ana;
+    try { while (r.sonraki < c.currentTime + 0.15) { nota(r, r.sonraki); r.sonraki += ADIM; r.adim++; } }
+    catch (e) { r.sonraki = c.currentTime + 0.05; }                           // bir nota hatası müziği kalıcı susturmasın
+  }
+  function hedefle(r, v, tau) {                       // ses düzeyini yumuşakça v'ye yaklaştır (eski değeri okumaz)
+    const t = c.currentTime; r.ana.gain.cancelScheduledValues(t); r.ana.gain.setTargetAtTime(v, t, tau);
+  }
+  function yeni() {
+    const r = { ana: c.createGain(), adim: 0, seviye: 1, sonraki: c.currentTime + 0.05, bitti: false, durT: 0, zaman: 0 };
+    r.ana.gain.value = 0; r.ana.connect(c.destination);
+    hedefle(r, 0.3, 0.12);
+    r.zaman = setInterval(() => dongu(r), 25);
+    calan.muzik = true;
+    return r;
+  }
+  function bitir(r, fade) {                           // bu oturumu söndür ve temizle
+    clearTimeout(r.durT);
+    if (r.bitti) return;
+    hedefle(r, 0, Math.max(0.05, fade / 4));
+    setTimeout(() => { r.bitti = true; clearInterval(r.zaman); try { r.ana.disconnect(); } catch (e) {} }, fade * 1000 + 300);
+  }
   function calis() { return acik && ses.acik; }
-  function baslat() {
-    if (!calis()) return;
-    const k = ses.ac(); if (!k) return;
-    c = k;
-    if (!ana) { ana = c.createGain(); ana.gain.value = 0; ana.connect(c.destination); }
-    clearTimeout(bitirT); clearTimeout(durT); seviye = 1;
-    const now = c.currentTime;
-    ana.gain.cancelScheduledValues(now); ana.gain.setValueAtTime(ana.gain.value, now); ana.gain.linearRampToValueAtTime(0.3, now + 0.4);
-    if (!calisiyor) { calisiyor = true; calan.muzik = true; sonraki = now + 0.05; adim = 0; zamanlayici = setInterval(dongu, 25); }
-  }
-  function durdur(fade) {
-    clearTimeout(durT);
-    if (!calisiyor) return;
-    fade = fade == null ? 1.2 : fade;
-    const now = c.currentTime;
-    ana.gain.cancelScheduledValues(now); ana.gain.setValueAtTime(ana.gain.value, now); ana.gain.linearRampToValueAtTime(0, now + fade);
-    clearTimeout(bitirT);
-    bitirT = setTimeout(() => { clearInterval(zamanlayici); calisiyor = false; calan.muzik = false; }, fade * 1000 + 60);
-  }
-  return {
+
+  const api = {
     get acik() { return acik; },
-    ayarla(v) { acik = v; store.set("muzik", v ? "1" : "0"); if (!v) durdur(0.2); },
-    baslat, durdur,
-    kutla(ms) {                                        // kazanan çıktı: coşkuyu artır, sonra yavaşça sustur
+    ayarla(v) { acik = v; store.set("muzik", v ? "1" : "0"); if (!v) api.durdur(0.2); },
+    baslat() {
       if (!calis()) return;
-      if (!calisiyor) baslat();
-      seviye = 2; adim = Math.ceil(adim / 64) * 64;   // sonraki 4 ölçülük turun başına: zil darbesiyle girer
-      const now = c.currentTime; ana.gain.cancelScheduledValues(now); ana.gain.setValueAtTime(ana.gain.value, now); ana.gain.linearRampToValueAtTime(0.38, now + 0.3);
-      clearTimeout(durT); durT = setTimeout(() => durdur(1.8), ms);
+      const k = ses.ac(); if (!k) return;
+      if (c !== k) { c = k; oturum = null; }
+      if (oturum && !oturum.bitti && !oturum.sonuyor) {          // zaten çalıyor: yalnızca çekiliş seviyesine dön
+        clearTimeout(oturum.durT); oturum.seviye = 1; hedefle(oturum, 0.3, 0.12); calan.muzik = true; return;
+      }
+      oturum = yeni();                                           // yoksa ya da sönüyorsa: sıfırdan yeni oturum
+    },
+    durdur(fade) {
+      const r = oturum; if (!r) return;
+      oturum = null; r.sonuyor = true; calan.muzik = false;
+      bitir(r, fade == null ? 1.2 : fade);
+    },
+    kutla(ms) {                                       // kazanan çıktı: coşkuyu artır, sonra yavaşça sustur
+      if (!calis()) return;
+      if (!oturum || oturum.bitti || oturum.sonuyor) api.baslat();
+      const r = oturum; if (!r) return;
+      r.seviye = 2; r.adim = Math.ceil(r.adim / 64) * 64;        // sonraki 4 ölçülük turun başına: zil darbesiyle girer
+      hedefle(r, 0.38, 0.1);
+      clearTimeout(r.durT); r.durT = setTimeout(() => { if (oturum === r) api.durdur(1.8); }, ms);
     }
   };
+  return api;
 })();
 
 /* ---------- Havai fişek ---------- */

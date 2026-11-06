@@ -47,6 +47,17 @@ export const projects: Project[] = [
     status: "live",
   },
   {
+    title: "Çekiliş",
+    description: {
+      tr: "Şirket ve yılbaşı çekilişleri için: isimleri yaz, hızla akan isimler arasından şanslı isim büyük harflerle ve havai fişekle çıksın. Ayrıca çark, kartlar, sayı çekilişi, takım kurma, zar ve yazı tura. Büyük ekran moduyla.",
+      en: "For company and New Year draws: type the names, watch them race by, and the lucky name lands in capitals with fireworks. Plus a wheel, cards, number draw, team maker, dice and coin flip, with a full-screen mode (in Turkish).",
+    },
+    // Dosya Çekiliş/siteye-aktar.mjs ile public/cekilis/ içine üretilir
+    link: "https://ugur-labs.com/cekilis/",
+    tags: ["HTML", "CSS", "JavaScript"],
+    status: "live",
+  },
+  {
     title: "Finans Paneli",
     description: {
       tr: "Gelir ve giderleri kaydedip bakiyeyi ve kategorilere göre harcamaları grafikle gösteren kişisel finans paneli. Veriler tarayıcıda kalır.",

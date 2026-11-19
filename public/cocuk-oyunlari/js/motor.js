@@ -73,7 +73,7 @@
       ad: "Ada",
       simge: "🦄",
       alt: "4,5 yaş · okul öncesi",
-      gruplar: ["Öğrenelim", "Zekâ oyunları", "Eğlence"],
+      gruplar: ["Öğrenelim", "Zekâ oyunları", "Kodlama", "Eğlence"],
       cikartmalar: "🦄 🐱 🐰 🦋 🌈 🌸 🍓 🧁 🎀 👑 🐼 🐨 🦊 🐯 🐸 🐢 🐬 🐳 🦜 🦩 🌻 🍉 🍭 🎠 🐞 🦔 🐧 🐣 🍩 🏰".split(" "),
     },
     ayaz: {
@@ -81,7 +81,7 @@
       ad: "Ayaz",
       simge: "🚀",
       alt: "9 yaş · 4. sınıf",
-      gruplar: ["Matematik", "Türkçe ve İngilizce", "Fen ve Sosyal", "Zekâ oyunları"],
+      gruplar: ["Matematik", "Türkçe ve İngilizce", "Fen ve Sosyal", "Zekâ oyunları", "Kodlama"],
       cikartmalar: "🚀 🛸 🌍 🦖 🦕 🐉 ⚽ 🏀 🏆 🥇 🤖 👾 🧩 🔭 🔬 🧲 ⚡ 🌋 🦈 🐙 🏎️ 🚁 🚂 ⛵ 🛰️ 🧠 💎 🦅 🐺 👑".split(" "),
     },
   };

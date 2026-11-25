@@ -47,6 +47,17 @@ export const projects: Project[] = [
     status: "live",
   },
   {
+    title: "Bilgi Merdiveni",
+    description: {
+      tr: "İlkokuldan liseye 1000 dört şıklı genel kültür sorusu: matematik, geometri, fen, coğrafya, tarih ve genel kültür. Her cevaptan sonra kısa bir \"biliyor muydun\" açıklaması. 15 basamaklı merdiven modu, aile yarışması, sesli okuma ve yanlışları tekrar çalışma.",
+      en: "1,000 multiple-choice general-knowledge questions from primary to high school: maths, geometry, science, geography, history and general culture, each with a short explanation. A 15-step ladder mode, family quiz, read-aloud and review of mistakes (in Turkish).",
+    },
+    // Dosyalar Bilgi Merdiveni/siteye-aktar.mjs ile public/bilgi-merdiveni/ içine üretilir
+    link: "https://ugur-labs.com/bilgi-merdiveni/",
+    tags: ["HTML", "CSS", "JavaScript"],
+    status: "live",
+  },
+  {
     title: "Çekiliş",
     description: {
       tr: "Şirket ve yılbaşı çekilişleri için: isimleri yaz, hızla akan isimler arasından şanslı isim büyük harflerle ve havai fişekle çıksın. Ayrıca çark, kartlar, sayı çekilişi, takım kurma, zar ve yazı tura. Büyük ekran moduyla.",

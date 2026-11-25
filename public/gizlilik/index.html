@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gizlilik Politikası · Ugur Labs</title>
+<meta name="description" content="Ugur Labs uygulamalarının ve Ev Paneli'nin Google Görevler bağlantısının gizlilik politikası.">
+<style>
+  /* Düz sayfa: sitenin tek renkli paleti, açık/koyu tema sistem ayarına göre */
+  :root { --zemin: #ffffff; --yazi: #111111; --soluk: #5c5c5c; --cizgi: #e5e5e5; --vurgu: #2563eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --zemin: #0a0a0a; --yazi: #ededed; --soluk: #a1a1a1; --cizgi: #262626; --vurgu: #60a5fa; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--zemin); color: var(--yazi); font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 8px; padding-top: 20px; border-top: 1px solid var(--cizgi); }
+  p, li { color: var(--yazi); }
+  ul { padding-left: 1.2em; }
+  li { margin: 4px 0; }
+  .soluk { color: var(--soluk); font-size: .92rem; }
+  a { color: var(--vurgu); }
+  .ust { display: inline-block; margin-bottom: 28px; color: var(--soluk); text-decoration: none; font-size: .92rem; }
+  .ust:hover { color: var(--yazi); }
+</style>
+</head>
+<body>
+<main>
+  <a class="ust" href="/">← ugur-labs.com</a>
+  <h1>Gizlilik Politikası</h1>
+  <p class="soluk">Son güncelleme: 25 Kasım 2026</p>
+
+  <p>Bu sayfa, Ugur Labs'in kişisel projelerinin hangi verileri nasıl kullandığını açıklar. Kısaca: verilerinizi satmayız, paylaşmayız, reklam için kullanmayız.</p>
+
+  <h2>Ev Paneli ve Google Görevler</h2>
+  <p>Ev Paneli, bir evin kendi bilgisayarında çalışan özel bir ev kontrol panelidir; herkese açık bir hizmet değildir. Google Cloud'da "Daily Activities" adıyla kayıtlı uygulama, bu panelin Google Görevler bağlantısıdır.</p>
+  <ul>
+    <li><strong>Erişilen veri:</strong> Google hesabınızın izin vermesiyle görev listeleriniz ve görevleriniz (başlık, not, son tarih, durum). Panel görevleri gösterir, tamamlandı olarak işaretler ve yeni görev ekler.</li>
+    <li><strong>Saklama:</strong> Görevler ve Google erişim anahtarları yalnızca panelin çalıştığı bilgisayarda saklanır. Ugur Labs'in bu veriyi topladığı bir sunucu yoktur.</li>
+    <li><strong>Bildirimler:</strong> Hatırlatma bildirimi için yalnızca görev başlığı, ntfy.sh bildirim servisi üzerinden panel sahibinin telefonuna gönderilir. Görev notları gönderilmez.</li>
+    <li><strong>Paylaşım:</strong> Google verileri üçüncü kişilerle paylaşılmaz, satılmaz, reklam için ya da yapay zekâ modeli eğitmek için kullanılmaz.</li>
+    <li><strong>Bağlantıyı kesme:</strong> Paneldeki "Bağlantıyı kes" düğmesi Google iznini geri alır ve yerel görev kopyasını siler. İzni ayrıca <a href="https://myaccount.google.com/permissions">Google hesabı izinleri</a> sayfasından da kaldırabilirsiniz.</li>
+  </ul>
+  <p>Ev Paneli'nin Google API'lerinden aldığı bilgileri kullanması ve başka uygulamalara aktarması, Sınırlı Kullanım (Limited Use) koşulları dahil <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Hizmetleri Kullanıcı Verileri Politikası</a>'na uyar.</p>
+
+  <h2>ugur-labs.com sitesi</h2>
+  <ul>
+    <li>Site çerez ve ziyaretçi takibi kullanmaz. Açık/koyu tema seçiminiz yalnızca tarayıcınızda saklanır.</li>
+    <li>Geri bildirim formunu kullanırsanız, yazdığınız mesaj Web3Forms aracılığıyla site sahibine e-postayla iletilir; form, spam koruması için hCaptcha kullanır.</li>
+    <li>Sitedeki küçük araç ve oyunlar (Tık Sayacı, Çekiliş, Bilgi Merdiveni, Oyun Evi) verilerini yalnızca kendi tarayıcınızda tutar.</li>
+  </ul>
+
+  <h2>İletişim</h2>
+  <p>Sorularınız için ana sayfadaki <a href="/#feedback">geri bildirim formunu</a> kullanabilirsiniz.</p>
+</main>
+</body>
+</html>

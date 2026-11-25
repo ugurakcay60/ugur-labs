@@ -1,0 +1,22 @@
+# Haftalık bağımlılık güncellemeleri: npm paketleri ve GitHub Actions adımları için PR açar.
+# Küçük (minor/patch) güncellemeler tek PR'da toplanır; PR'ı birleştirmeden önce build'in geçtiğine bak.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      kucuk-guncellemeler:
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint TS 7'yi henüz desteklemiyor (lint kırılıyor); destek gelince bu satırı kaldır
+      - dependency-name: typescript
+        versions: [">=7"]
+      # Tipler çalışan Node sürümüyle eşleşmeli (yerel ve deploy.yml: Node 24)
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
